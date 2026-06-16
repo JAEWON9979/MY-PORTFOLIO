@@ -4,7 +4,21 @@
       "PowerShell(Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue })",
       "Bash(rm -rf .next)",
       "Bash(curl -s -o /dev/null -w \"/works -> %{http_code}\\\\n\" http://localhost:3000/works)",
-      "Bash(curl -s http://localhost:3000/works)"
+      "Bash(curl -s http://localhost:3000/works)",
+      "Bash(npm install *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/posts?select=id&limit=1\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\")",
+      "Bash(curl -s \"https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/posts?select=id&limit=1\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\")",
+      "Bash(curl -s \"https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/posts?select=id,title,content,category,author_name,like_count,view_count,created_at,updated_at&limit=1\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\")",
+      "Bash(curl -s \"https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/goals?select=id,title,description,category,progress,deadline&limit=1\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\")",
+      "Bash(curl -s \"https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/works?select=id,title,description,category,tech_tags,file_type,link_url,work_date&limit=1\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\")",
+      "Bash(curl -s \"https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/comments?select=id,post_id,content,author_name,created_at&limit=1\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\")",
+      "Bash(curl -s \"https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\" -H \"Accept: application/openapi+json\" -o /tmp/openapi.json)",
+      "Bash(python3 -c ' *)",
+      "Bash(node -e ' *)",
+      "Bash(curl -s \"https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/posts?select=*&limit=0\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\" -H \"Prefer: count=exact\" -i)",
+      "Bash(curl -s -X OPTIONS \"https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/posts\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\")",
+      "Bash(curl -s -X POST https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/posts -H 'apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V' -H 'Content-Type: application/json' -H 'Prefer: return=representation' -d '{}')",
+      "Bash(curl -s \"https://gqiwrlleaqcvtwphrmpx.supabase.co/auth/v1/settings\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\")"
     ]
   }
 }

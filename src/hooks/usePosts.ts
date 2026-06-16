@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export type PostCategory = "자유" | "정보공유" | "질문";
 
@@ -21,115 +22,138 @@ export type PostInput = Pick<
   "title" | "content" | "category" | "authorName"
 >;
 
-const STORAGE_KEY = "community_posts";
-
-const samplePosts: Post[] = [
-  {
-    id: "sample-post-1",
-    title: "커뮤니티 게시판을 열었습니다",
-    content: "자유롭게 의견을 나눠주세요. 잘 부탁드립니다.",
-    category: "자유",
-    authorName: "운영자",
-    createdAt: "2026-06-01T09:00:00.000Z",
-    updatedAt: "2026-06-01T09:00:00.000Z",
-    likeCount: 3,
-    viewCount: 42,
-  },
-  {
-    id: "sample-post-2",
-    title: "행정직 자격증 준비 정보 공유합니다",
-    content: "정보처리기사, 컴퓨터활용능력 준비할 때 참고했던 자료들 정리했어요.",
-    category: "정보공유",
-    authorName: "준비생",
-    createdAt: "2026-06-05T10:30:00.000Z",
-    updatedAt: "2026-06-05T10:30:00.000Z",
-    likeCount: 7,
-    viewCount: 120,
-  },
-  {
-    id: "sample-post-3",
-    title: "면접 준비 어떻게 하셨나요?",
-    content: "행정직 면접 후기나 준비 방법 공유해주실 분 계신가요?",
-    category: "질문",
-    authorName: "익명",
-    createdAt: "2026-06-10T15:15:00.000Z",
-    updatedAt: "2026-06-10T15:15:00.000Z",
-    likeCount: 1,
-    viewCount: 58,
-  },
-];
-
-function loadPosts(): Post[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return samplePosts;
-    return JSON.parse(raw) as Post[];
-  } catch {
-    return samplePosts;
-  }
+interface PostRow {
+  id: string;
+  title: string;
+  content: string;
+  category: PostCategory;
+  author_name: string;
+  created_at: string;
+  updated_at: string;
+  like_count: number;
+  view_count: number;
 }
 
-function persistPosts(posts: Post[]) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+function fromRow(row: PostRow): Post {
+  return {
+    id: row.id,
+    title: row.title,
+    content: row.content,
+    category: row.category,
+    authorName: row.author_name,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    likeCount: row.like_count,
+    viewCount: row.view_count,
+  };
 }
 
 export function usePosts() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    setPosts(loadPosts());
+  const refresh = useCallback(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (!error && data) {
+      setPosts((data as PostRow[]).map(fromRow));
+    }
     setIsLoaded(true);
   }, []);
 
   useEffect(() => {
-    if (isLoaded) persistPosts(posts);
-  }, [posts, isLoaded]);
+    refresh();
+  }, [refresh]);
 
   const addPost = useCallback(async (input: PostInput) => {
-    const now = new Date().toISOString();
-    const newPost: Post = {
-      ...input,
-      id: crypto.randomUUID(),
-      createdAt: now,
-      updatedAt: now,
-      likeCount: 0,
-      viewCount: 0,
-    };
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("posts")
+      .insert({
+        title: input.title,
+        content: input.content,
+        category: input.category,
+        author_name: input.authorName,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    const newPost = fromRow(data as PostRow);
     setPosts((prev) => [newPost, ...prev]);
     return newPost;
   }, []);
 
-  const updatePost = useCallback(async (id: string, input: PostInput) => {
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.id === id
-          ? { ...post, ...input, updatedAt: new Date().toISOString() }
-          : post
-      )
-    );
-  }, []);
+  const updatePost = useCallback(
+    async (id: string, input: PostInput) => {
+      const supabase = createClient();
+      const updatedAt = new Date().toISOString();
+      const { error } = await supabase
+        .from("posts")
+        .update({
+          title: input.title,
+          content: input.content,
+          category: input.category,
+          author_name: input.authorName,
+          updated_at: updatedAt,
+        })
+        .eq("id", id);
+      if (error) throw error;
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === id ? { ...post, ...input, updatedAt } : post
+        )
+      );
+    },
+    []
+  );
 
   const deletePost = useCallback(async (id: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from("posts").delete().eq("id", id);
+    if (error) throw error;
     setPosts((prev) => prev.filter((post) => post.id !== id));
   }, []);
 
-  const incrementViewCount = useCallback(async (id: string) => {
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.id === id ? { ...post, viewCount: post.viewCount + 1 } : post
-      )
-    );
-  }, []);
+  const incrementViewCount = useCallback(
+    async (id: string) => {
+      const target = posts.find((post) => post.id === id);
+      if (!target) return;
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("posts")
+        .update({ view_count: target.viewCount + 1 })
+        .eq("id", id);
+      if (error) return;
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === id ? { ...post, viewCount: post.viewCount + 1 } : post
+        )
+      );
+    },
+    [posts]
+  );
 
-  const incrementLikeCount = useCallback(async (id: string) => {
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.id === id ? { ...post, likeCount: post.likeCount + 1 } : post
-      )
-    );
-  }, []);
+  const incrementLikeCount = useCallback(
+    async (id: string) => {
+      const target = posts.find((post) => post.id === id);
+      if (!target) return;
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("posts")
+        .update({ like_count: target.likeCount + 1 })
+        .eq("id", id);
+      if (error) return;
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === id ? { ...post, likeCount: post.likeCount + 1 } : post
+        )
+      );
+    },
+    [posts]
+  );
 
   const getPostById = useCallback(
     (id: string) => posts.find((post) => post.id === id),
