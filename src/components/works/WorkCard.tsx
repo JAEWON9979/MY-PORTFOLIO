@@ -1,10 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import type { Work } from "@/hooks/useWorks";
-
-interface WorkCardProps {
-  work: Work;
-}
 
 const categoryStyles: Record<Work["category"], string> = {
   수업과제: "bg-blue-50 text-blue-700",
@@ -15,12 +12,23 @@ const categoryStyles: Record<Work["category"], string> = {
 const fileTypeIcon: Record<Work["fileType"], string> = {
   PDF: "📄",
   PPTX: "📊",
+  DOCX: "📝",
   기타: "📁",
 };
 
-export default function WorkCard({ work }: WorkCardProps) {
+export default function WorkCard({ work }: { work: Work }) {
+  const router = useRouter();
+
   return (
-    <div className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => router.push(`/works/${work.id}`)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") router.push(`/works/${work.id}`);
+      }}
+      className="flex cursor-pointer flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+    >
       <div className="mb-3 flex items-center justify-between gap-2">
         <span
           className={`rounded-full px-2.5 py-1 text-xs font-medium ${categoryStyles[work.category]}`}
@@ -53,17 +61,7 @@ export default function WorkCard({ work }: WorkCardProps) {
         ))}
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
-        <span className="text-xs text-zinc-500">{work.date}</span>
-        <a
-          href={work.linkUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="rounded-lg bg-zinc-100 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-200"
-        >
-          바로가기
-        </a>
-      </div>
+      <p className="mt-4 text-xs text-zinc-500">{work.date}</p>
     </div>
   );
 }

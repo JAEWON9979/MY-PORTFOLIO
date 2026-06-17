@@ -2,68 +2,93 @@
 
 import type { Goal } from "@/hooks/useGoals";
 
-interface GoalCardProps {
+interface GoalRowProps {
   goal: Goal;
+  onToggle: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onProgressChange: (progress: number) => void;
 }
 
 const categoryStyles: Record<Goal["category"], string> = {
-  단기: "bg-blue-50 text-blue-700",
-  장기: "bg-purple-50 text-purple-700",
-  학업: "bg-amber-50 text-amber-700",
+  일목표: "bg-sky-50 text-sky-700",
+  주목표: "bg-violet-50 text-violet-700",
+  연목표: "bg-amber-50 text-amber-700",
 };
 
-export default function GoalCard({
-  goal,
-  onEdit,
-  onDelete,
-  onProgressChange,
-}: GoalCardProps) {
+export default function GoalCard({ goal, onToggle, onEdit, onDelete }: GoalRowProps) {
   return (
-    <div className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <div className="mb-3 flex items-start justify-between gap-2">
+    <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3 transition-shadow hover:shadow-sm">
+      {/* Toggle circle */}
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label={goal.isCompleted ? "미달성으로 변경" : "달성으로 변경"}
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+          goal.isCompleted
+            ? "border-zinc-900 bg-zinc-900 text-white"
+            : "border-zinc-300 hover:border-zinc-600"
+        }`}
+      >
+        {goal.isCompleted && (
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 10 10"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M1.5 5l2.5 2.5 4.5-4.5" />
+          </svg>
+        )}
+      </button>
+
+      {/* Title */}
+      <p
+        className={`flex-1 truncate text-sm font-medium ${
+          goal.isCompleted ? "text-zinc-400 line-through" : "text-zinc-900"
+        }`}
+      >
+        {goal.title}
+      </p>
+
+      {/* Category + deadline (hidden on very small screens) */}
+      <div className="hidden shrink-0 items-center gap-2 sm:flex">
         <span
-          className={`rounded-full px-2.5 py-1 text-xs font-medium ${categoryStyles[goal.category]}`}
+          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryStyles[goal.category]}`}
         >
           {goal.category}
         </span>
-        <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="rounded-md px-2 py-1 text-xs font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
-          >
-            수정
-          </button>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="rounded-md px-2 py-1 text-xs font-medium text-zinc-500 hover:bg-red-50 hover:text-red-600"
-          >
-            삭제
-          </button>
-        </div>
+        <span className="text-xs text-zinc-400">~{goal.deadline}</span>
       </div>
 
-      <h3 className="text-base font-semibold text-zinc-900">{goal.title}</h3>
-      <p className="mt-1 flex-1 text-sm text-zinc-600">{goal.description}</p>
-      <p className="mt-3 text-xs text-zinc-500">마감일 {goal.deadline}</p>
+      {/* Status pill */}
+      <span
+        className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+          goal.isCompleted
+            ? "bg-emerald-50 text-emerald-700"
+            : "bg-zinc-100 text-zinc-500"
+        }`}
+      >
+        {goal.isCompleted ? "달성" : "미달성"}
+      </span>
 
-      <div className="mt-4">
-        <div className="mb-1 flex justify-between text-xs font-medium text-zinc-600">
-          <span>진행률</span>
-          <span>{goal.progress}%</span>
-        </div>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={goal.progress}
-          onChange={(event) => onProgressChange(Number(event.target.value))}
-          className="w-full"
-        />
+      {/* Actions */}
+      <div className="flex shrink-0 gap-1">
+        <button
+          type="button"
+          onClick={onEdit}
+          className="rounded px-1.5 py-1 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+        >
+          수정
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          className="rounded px-1.5 py-1 text-xs text-zinc-400 hover:bg-red-50 hover:text-red-600"
+        >
+          삭제
+        </button>
       </div>
     </div>
   );

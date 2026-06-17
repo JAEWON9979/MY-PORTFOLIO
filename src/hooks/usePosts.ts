@@ -7,6 +7,7 @@ export type PostCategory = "자유" | "정보공유" | "질문";
 
 export interface Post {
   id: string;
+  userId: string | null;
   title: string;
   content: string;
   category: PostCategory;
@@ -24,6 +25,7 @@ export type PostInput = Pick<
 
 interface PostRow {
   id: string;
+  user_id: string | null;
   title: string;
   content: string;
   category: PostCategory;
@@ -37,6 +39,7 @@ interface PostRow {
 function fromRow(row: PostRow): Post {
   return {
     id: row.id,
+    userId: row.user_id,
     title: row.title,
     content: row.content,
     category: row.category,
@@ -70,6 +73,9 @@ export function usePosts() {
 
   const addPost = useCallback(async (input: PostInput) => {
     const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
+    if (!userId) throw new Error("로그인이 필요합니다.");
     const { data, error } = await supabase
       .from("posts")
       .insert({
@@ -77,6 +83,7 @@ export function usePosts() {
         content: input.content,
         category: input.category,
         author_name: input.authorName,
+        user_id: userId,
       })
       .select()
       .single();

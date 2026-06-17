@@ -4,10 +4,10 @@ import { motion } from "framer-motion";
 
 const careerItems = [
   {
-    period: "2020.03 - 2023.02",
-    title: "직책 / 부서명",
-    org: "기관 또는 회사명",
-    description: "담당했던 업무 내용을 간략히 작성해주세요.",
+    period: "2023.03 - 현재",
+    title: "한신대학교 재학",
+    org: "공공인데빅데이터융합학",
+    description: "2학년",
   },
   {
     period: "2018.03 - 2020.02",
@@ -19,7 +19,7 @@ const careerItems = [
 
 export default function Career() {
   return (
-    <section id="career" className="mx-auto max-w-3xl px-6 py-20">
+    <section id="career" className="mx-auto max-w-3xl px-6 py-12">
       <motion.h2
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}

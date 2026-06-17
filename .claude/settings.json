@@ -18,7 +18,11 @@
       "Bash(curl -s \"https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/posts?select=*&limit=0\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\" -H \"Prefer: count=exact\" -i)",
       "Bash(curl -s -X OPTIONS \"https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/posts\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\")",
       "Bash(curl -s -X POST https://gqiwrlleaqcvtwphrmpx.supabase.co/rest/v1/posts -H 'apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V' -H 'Content-Type: application/json' -H 'Prefer: return=representation' -d '{}')",
-      "Bash(curl -s \"https://gqiwrlleaqcvtwphrmpx.supabase.co/auth/v1/settings\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\")"
+      "Bash(curl -s \"https://gqiwrlleaqcvtwphrmpx.supabase.co/auth/v1/settings\" -H \"apikey: sb_publishable_xDZPjtvhHWPfhd0g525N_g_j-bw025V\")",
+      "Bash(mkdir -p \"c:/my-portfolio/src/app/works/[id]\")"
+    ],
+    "additionalDirectories": [
+      "c:\\my-portfolio\\src\\app\\works"
     ]
   }
 }

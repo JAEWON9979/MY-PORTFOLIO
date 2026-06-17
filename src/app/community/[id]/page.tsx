@@ -1,17 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { usePosts, type PostCategory } from "@/hooks/usePosts";
 import { useComments } from "@/hooks/useComments";
+import { useAuth } from "@/hooks/useAuth";
 
 const categoryOptions: PostCategory[] = ["자유", "정보공유", "질문"];
 
 export default function CommunityPostPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuth();
   const {
     isLoaded,
     getPostById,
@@ -22,19 +25,19 @@ export default function CommunityPostPage() {
   } = usePosts();
   const { getCommentsByPostId, addComment, deleteComment } = useComments();
 
-  const [viewerName, setViewerName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editCategory, setEditCategory] = useState<PostCategory>("자유");
+  const [editError, setEditError] = useState("");
 
   const [commentContent, setCommentContent] = useState("");
-  const [commentAuthor, setCommentAuthor] = useState("");
+  const [commentError, setCommentError] = useState("");
   const hasCountedView = useRef(false);
 
   const post = getPostById(params.id);
   const comments = getCommentsByPostId(params.id);
-  const isOwner = !!post && viewerName.trim() !== "" && viewerName === post.authorName;
+  const isOwner = !!post && !!user && post.userId === user.id;
 
   useEffect(() => {
     if (post && !hasCountedView.current) {
@@ -54,30 +57,47 @@ export default function CommunityPostPage() {
   const handleEditSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!post || !editTitle.trim() || !editContent.trim()) return;
-    await updatePost(post.id, {
-      title: editTitle,
-      content: editContent,
-      category: editCategory,
-      authorName: post.authorName,
-    });
-    setIsEditing(false);
+    setEditError("");
+    try {
+      await updatePost(post.id, {
+        title: editTitle,
+        content: editContent,
+        category: editCategory,
+        authorName: post.authorName,
+      });
+      setIsEditing(false);
+    } catch {
+      setEditError("수정에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   const handleDelete = async () => {
     if (!post) return;
-    await deletePost(post.id);
-    router.push("/community");
+    if (!confirm("이 게시글을 삭제하시겠습니까?")) return;
+    try {
+      await deletePost(post.id);
+      router.push("/community");
+    } catch {
+      alert("삭제 중 오류가 발생했습니다.");
+    }
   };
 
   const handleAddComment = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!commentContent.trim() || !commentAuthor.trim() || !post) return;
-    await addComment({
-      postId: post.id,
-      content: commentContent,
-      authorName: commentAuthor,
-    });
-    setCommentContent("");
+    if (!commentContent.trim() || !post || !user) return;
+    setCommentError("");
+    const displayName =
+      (user.user_metadata?.username as string | undefined) ?? user.email ?? "익명";
+    try {
+      await addComment({
+        postId: post.id,
+        content: commentContent,
+        authorName: displayName,
+      });
+      setCommentContent("");
+    } catch {
+      setCommentError("댓글 등록에 실패했습니다.");
+    }
   };
 
   if (isLoaded && !post) {
@@ -101,18 +121,6 @@ export default function CommunityPostPage() {
         <section className="mx-auto max-w-3xl px-6 py-12">
           {post && (
             <>
-              <div className="mb-4 flex items-center justify-end gap-2 text-xs text-zinc-500">
-                <label htmlFor="viewerName">본인 확인</label>
-                <input
-                  id="viewerName"
-                  type="text"
-                  value={viewerName}
-                  onChange={(event) => setViewerName(event.target.value)}
-                  placeholder="작성자 이름 입력"
-                  className="w-36 rounded-lg border border-zinc-300 px-2 py-1 text-xs text-zinc-900 focus:border-zinc-500 focus:outline-none"
-                />
-              </div>
-
               {isEditing ? (
                 <form onSubmit={handleEditSubmit} className="space-y-4">
                   <div>
@@ -142,6 +150,7 @@ export default function CommunityPostPage() {
                       value={editTitle}
                       onChange={(event) => setEditTitle(event.target.value)}
                       required
+                      maxLength={100}
                       className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
                     />
                   </div>
@@ -153,9 +162,13 @@ export default function CommunityPostPage() {
                       value={editContent}
                       onChange={(event) => setEditContent(event.target.value)}
                       required
+                      maxLength={2000}
                       className="min-h-[200px] w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
                     />
                   </div>
+                  {editError && (
+                    <p className="text-sm text-red-600">{editError}</p>
+                  )}
                   <div className="flex justify-end gap-2">
                     <button
                       type="button"
@@ -233,8 +246,7 @@ export default function CommunityPostPage() {
                 <ul className="space-y-3">
                   {comments.map((comment) => {
                     const isCommentOwner =
-                      viewerName.trim() !== "" &&
-                      viewerName === comment.authorName;
+                      !!user && comment.userId === user.id;
                     return (
                       <li
                         key={comment.id}
@@ -260,34 +272,44 @@ export default function CommunityPostPage() {
                   })}
                 </ul>
 
-                <form onSubmit={handleAddComment} className="mt-4 space-y-2">
-                  <input
-                    type="text"
-                    value={commentAuthor}
-                    onChange={(event) => setCommentAuthor(event.target.value)}
-                    placeholder="작성자 이름"
-                    required
-                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
-                  />
-                  <textarea
-                    value={commentContent}
-                    onChange={(event) =>
-                      setCommentContent(event.target.value)
-                    }
-                    placeholder="댓글을 입력하세요"
-                    required
-                    rows={3}
-                    className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
-                  />
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                {user ? (
+                  <form onSubmit={handleAddComment} className="mt-4 space-y-2">
+                    <textarea
+                      value={commentContent}
+                      onChange={(event) =>
+                        setCommentContent(event.target.value)
+                      }
+                      placeholder="댓글을 입력하세요"
+                      required
+                      maxLength={500}
+                      rows={3}
+                      className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                    />
+                    {commentError && (
+                      <p className="text-sm text-red-600">{commentError}</p>
+                    )}
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                      >
+                        등록
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="mt-4 rounded-lg border border-zinc-200 p-4 text-center">
+                    <p className="text-sm text-zinc-500">
+                      댓글 작성은 로그인 후 이용할 수 있습니다.
+                    </p>
+                    <Link
+                      href="/auth/login"
+                      className="mt-2 inline-block text-sm font-medium text-zinc-900 underline underline-offset-2"
                     >
-                      등록
-                    </button>
+                      로그인
+                    </Link>
                   </div>
-                </form>
+                )}
               </div>
             </>
           )}

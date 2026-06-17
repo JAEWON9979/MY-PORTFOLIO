@@ -3,25 +3,25 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export type GoalCategory = "단기" | "장기" | "학업";
+export type GoalCategory = "일목표" | "주목표" | "연목표";
 
 export interface Goal {
   id: string;
   title: string;
   description: string;
   category: GoalCategory;
-  progress: number;
+  isCompleted: boolean;
   deadline: string;
 }
 
-export type GoalInput = Omit<Goal, "id">;
+export type GoalInput = Omit<Goal, "id" | "isCompleted">;
 
 interface GoalRow {
   id: string;
   title: string;
   description: string;
   category: GoalCategory;
-  progress: number;
+  is_completed: boolean;
   deadline: string;
 }
 
@@ -31,7 +31,7 @@ function fromRow(row: GoalRow): Goal {
     title: row.title,
     description: row.description,
     category: row.category,
-    progress: row.progress,
+    isCompleted: row.is_completed,
     deadline: row.deadline,
   };
 }
@@ -58,14 +58,19 @@ export function useGoals() {
 
   const addGoal = useCallback(async (input: GoalInput) => {
     const supabase = createClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
+    if (!userId) throw new Error("로그인이 필요합니다.");
     const { data, error } = await supabase
       .from("goals")
       .insert({
         title: input.title,
         description: input.description,
         category: input.category,
-        progress: input.progress,
         deadline: input.deadline,
+        user_id: userId,
       })
       .select()
       .single();
@@ -83,7 +88,6 @@ export function useGoals() {
         title: input.title,
         description: input.description,
         category: input.category,
-        progress: input.progress,
         deadline: input.deadline,
       })
       .eq("id", id);
@@ -100,17 +104,23 @@ export function useGoals() {
     setGoals((prev) => prev.filter((goal) => goal.id !== id));
   }, []);
 
-  const updateProgress = useCallback(async (id: string, progress: number) => {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("goals")
-      .update({ progress })
-      .eq("id", id);
-    if (error) return;
-    setGoals((prev) =>
-      prev.map((goal) => (goal.id === id ? { ...goal, progress } : goal))
-    );
-  }, []);
+  const toggleComplete = useCallback(
+    async (id: string) => {
+      const current = goals.find((g) => g.id === id);
+      if (!current) return;
+      const next = !current.isCompleted;
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("goals")
+        .update({ is_completed: next })
+        .eq("id", id);
+      if (error) return;
+      setGoals((prev) =>
+        prev.map((g) => (g.id === id ? { ...g, isCompleted: next } : g))
+      );
+    },
+    [goals]
+  );
 
-  return { goals, isLoaded, addGoal, updateGoal, deleteGoal, updateProgress };
+  return { goals, isLoaded, addGoal, updateGoal, deleteGoal, toggleComplete };
 }

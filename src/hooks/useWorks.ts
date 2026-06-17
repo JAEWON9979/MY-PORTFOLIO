@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export type WorkCategory = "수업과제" | "개인실습" | "팀프로젝트";
-export type WorkFileType = "PDF" | "PPTX" | "기타";
+export type WorkFileType = "PDF" | "PPTX" | "DOCX" | "기타";
 
 export interface Work {
   id: string;
@@ -14,6 +14,8 @@ export interface Work {
   techTags: string[];
   fileType: WorkFileType;
   linkUrl: string;
+  fileName: string | null;
+  fileSize: number | null;
   date: string;
 }
 
@@ -27,6 +29,8 @@ interface WorkRow {
   tech_tags: string[];
   file_type: WorkFileType;
   link_url: string;
+  file_name: string | null;
+  file_size: number | null;
   work_date: string;
 }
 
@@ -39,6 +43,8 @@ function fromRow(row: WorkRow): Work {
     techTags: row.tech_tags,
     fileType: row.file_type,
     linkUrl: row.link_url,
+    fileName: row.file_name,
+    fileSize: row.file_size,
     date: row.work_date,
   };
 }
@@ -74,6 +80,8 @@ export function useWorks() {
         tech_tags: input.techTags,
         file_type: input.fileType,
         link_url: input.linkUrl,
+        file_name: input.fileName,
+        file_size: input.fileSize,
         work_date: input.date,
       })
       .select()
@@ -95,6 +103,8 @@ export function useWorks() {
         tech_tags: input.techTags,
         file_type: input.fileType,
         link_url: input.linkUrl,
+        file_name: input.fileName,
+        file_size: input.fileSize,
         work_date: input.date,
       })
       .eq("id", id);
@@ -111,5 +121,10 @@ export function useWorks() {
     setWorks((prev) => prev.filter((work) => work.id !== id));
   }, []);
 
-  return { works, isLoaded, addWork, updateWork, deleteWork };
+  const getWorkById = useCallback(
+    (id: string) => works.find((work) => work.id === id) ?? null,
+    [works]
+  );
+
+  return { works, isLoaded, addWork, updateWork, deleteWork, getWorkById };
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Goal, GoalCategory, GoalInput } from "@/hooks/useGoals";
 
-const categoryOptions: GoalCategory[] = ["단기", "장기", "학업"];
+const categoryOptions: GoalCategory[] = ["일목표", "주목표", "연목표"];
 
 interface GoalModalProps {
   initialGoal?: Goal | null;
@@ -11,33 +11,26 @@ interface GoalModalProps {
   onSubmit: (input: GoalInput) => void;
 }
 
-export default function GoalModal({
-  initialGoal,
-  onClose,
-  onSubmit,
-}: GoalModalProps) {
+export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalProps) {
   const [title, setTitle] = useState(initialGoal?.title ?? "");
-  const [description, setDescription] = useState(
-    initialGoal?.description ?? ""
-  );
+  const [description, setDescription] = useState(initialGoal?.description ?? "");
   const [category, setCategory] = useState<GoalCategory>(
-    initialGoal?.category ?? "단기"
+    initialGoal?.category ?? "일목표"
   );
   const [deadline, setDeadline] = useState(initialGoal?.deadline ?? "");
-  const [progress, setProgress] = useState(initialGoal?.progress ?? 0);
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!title.trim() || !deadline) return;
-    onSubmit({ title, description, category, deadline, progress });
+    onSubmit({ title, description, category, deadline });
   };
 
   return (
@@ -47,7 +40,7 @@ export default function GoalModal({
     >
       <div
         className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
-        onClick={(event) => event.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         <h2 className="mb-4 text-lg font-bold text-zinc-900">
           {initialGoal ? "목표 수정" : "목표 추가"}
@@ -60,22 +53,26 @@ export default function GoalModal({
             <input
               type="text"
               value={title}
-              onChange={(event) => setTitle(event.target.value)}
+              onChange={(e) => setTitle(e.target.value)}
               required
+              maxLength={100}
               className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
             />
           </div>
+
           <div>
             <label className="mb-1 block text-sm font-medium text-zinc-700">
               설명
             </label>
             <textarea
               value={description}
-              onChange={(event) => setDescription(event.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
               rows={3}
+              maxLength={500}
               className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
             />
           </div>
+
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="mb-1 block text-sm font-medium text-zinc-700">
@@ -83,14 +80,12 @@ export default function GoalModal({
               </label>
               <select
                 value={category}
-                onChange={(event) =>
-                  setCategory(event.target.value as GoalCategory)
-                }
+                onChange={(e) => setCategory(e.target.value as GoalCategory)}
                 className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
               >
-                {categoryOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                {categoryOptions.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
                   </option>
                 ))}
               </select>
@@ -102,26 +97,13 @@ export default function GoalModal({
               <input
                 type="date"
                 value={deadline}
-                onChange={(event) => setDeadline(event.target.value)}
+                onChange={(e) => setDeadline(e.target.value)}
                 required
                 className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
               />
             </div>
           </div>
-          <div>
-            <label className="mb-1 flex justify-between text-sm font-medium text-zinc-700">
-              <span>진행률</span>
-              <span>{progress}%</span>
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={progress}
-              onChange={(event) => setProgress(Number(event.target.value))}
-              className="w-full"
-            />
-          </div>
+
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"

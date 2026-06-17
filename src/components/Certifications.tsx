@@ -5,7 +5,7 @@ import { certifications } from "@/data/portfolio";
 
 export default function Certifications() {
   return (
-    <section id="certifications" className="mx-auto max-w-3xl px-6 py-20">
+    <section id="certifications" className="mx-auto max-w-3xl px-6 py-12">
       <motion.h2
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}

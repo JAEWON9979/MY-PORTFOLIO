@@ -6,7 +6,7 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="flex min-h-[70vh] flex-col items-center justify-center gap-4 px-6 text-center"
+      className="flex min-h-[40vh] flex-col items-center justify-center gap-4 px-6 text-center"
     >
       <motion.p
         initial={{ opacity: 0, y: 10 }}
@@ -22,7 +22,7 @@ export default function Hero() {
         transition={{ duration: 0.5, delay: 0.1 }}
         className="text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl"
       >
-        이름입니다
+        김재원입니다
       </motion.h1>
       <motion.p
         initial={{ opacity: 0, y: 10 }}
@@ -30,8 +30,8 @@ export default function Hero() {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="max-w-xl text-base text-zinc-600"
       >
-        한 줄 소개를 입력해주세요. (예: 책임감을 바탕으로 행정 업무를 수행해온
-        OOO입니다.)
+        본 사이트는 개인 포토폴리오 웹 페이지입니다.
+        
       </motion.p>
     </section>
   );
