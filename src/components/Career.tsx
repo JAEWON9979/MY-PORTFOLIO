@@ -6,7 +6,7 @@ const careerItems = [
   {
     period: "2023.03 - 현재",
     title: "한신대학교 재학",
-    org: "공공인데빅데이터융합학",
+    org: "공공인재빅데이터융합학",
     description: "2학년",
   },
   {

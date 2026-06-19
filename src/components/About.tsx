@@ -21,7 +21,7 @@ export default function About() {
         transition={{ duration: 0.5, delay: 0.1 }}
         className="leading-7 text-zinc-700"
       >
-        안녕하세요. 행정관련 직종을 희망하고있는 김재원입니다. 행정역량을 기본으로 AI역량을 결합하는것을 목표하고 있습니다.
+        안녕하세요. 행정 관련 직종을 희망하고 있는 김재원입니다. 행정역량을 기본으로 AI역량을 결합하는것을 목표하고 있습니다.
       </motion.p>
     </section>
   );
