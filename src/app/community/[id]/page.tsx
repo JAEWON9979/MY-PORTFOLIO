@@ -14,7 +14,7 @@ const categoryOptions: PostCategory[] = ["자유", "정보공유", "질문"];
 export default function CommunityPostPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const {
     isLoaded,
     getPostById,
@@ -22,6 +22,7 @@ export default function CommunityPostPage() {
     deletePost,
     incrementViewCount,
     incrementLikeCount,
+    toggleHidden,
   } = usePosts();
   const { getCommentsByPostId, addComment, deleteComment } = useComments();
 
@@ -38,6 +39,7 @@ export default function CommunityPostPage() {
   const post = getPostById(params.id);
   const comments = getCommentsByPostId(params.id);
   const isOwner = !!post && !!user && post.userId === user.id;
+  const canSeePost = !post?.isHidden || isAdmin;
 
   useEffect(() => {
     if (post && !hasCountedView.current) {
@@ -100,7 +102,7 @@ export default function CommunityPostPage() {
     }
   };
 
-  if (isLoaded && !post) {
+  if (isLoaded && (!post || !canSeePost)) {
     return (
       <div className="flex flex-1 flex-col bg-white">
         <Header />
@@ -209,7 +211,7 @@ export default function CommunityPostPage() {
                     {post.content}
                   </p>
 
-                  <div className="mt-6 flex gap-2">
+                  <div className="mt-6 flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={() => incrementLikeCount(post.id)}
@@ -234,6 +236,25 @@ export default function CommunityPostPage() {
                           삭제
                         </button>
                       </>
+                    )}
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            await toggleHidden(post.id);
+                          } catch {
+                            alert("처리 중 오류가 발생했습니다.");
+                          }
+                        }}
+                        className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
+                          post.isHidden
+                            ? "bg-zinc-800 text-white hover:bg-zinc-700"
+                            : "border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                        }`}
+                      >
+                        {post.isHidden ? "숨김 해제" : "숨김 처리"}
+                      </button>
                     )}
                   </div>
                 </>

@@ -16,7 +16,13 @@ const fileTypeIcon: Record<Work["fileType"], string> = {
   기타: "📁",
 };
 
-export default function WorkCard({ work }: { work: Work }) {
+export default function WorkCard({
+  work,
+  isAdmin = false,
+}: {
+  work: Work;
+  isAdmin?: boolean;
+}) {
   const router = useRouter();
 
   return (
@@ -30,11 +36,18 @@ export default function WorkCard({ work }: { work: Work }) {
       className="flex cursor-pointer flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
     >
       <div className="mb-3 flex items-center justify-between gap-2">
-        <span
-          className={`rounded-full px-2.5 py-1 text-xs font-medium ${categoryStyles[work.category]}`}
-        >
-          {work.category}
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            className={`rounded-full px-2.5 py-1 text-xs font-medium ${categoryStyles[work.category]}`}
+          >
+            {work.category}
+          </span>
+          {isAdmin && !work.isPublic && (
+            <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-white">
+              비공개
+            </span>
+          )}
+        </div>
         <span
           className="text-lg"
           role="img"

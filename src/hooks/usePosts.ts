@@ -16,6 +16,7 @@ export interface Post {
   updatedAt: string;
   likeCount: number;
   viewCount: number;
+  isHidden: boolean;
 }
 
 export type PostInput = Pick<
@@ -34,6 +35,7 @@ interface PostRow {
   updated_at: string;
   like_count: number;
   view_count: number;
+  is_hidden: boolean;
 }
 
 function fromRow(row: PostRow): Post {
@@ -48,6 +50,7 @@ function fromRow(row: PostRow): Post {
     updatedAt: row.updated_at,
     likeCount: row.like_count,
     viewCount: row.view_count,
+    isHidden: row.is_hidden,
   };
 }
 
@@ -167,6 +170,24 @@ export function usePosts() {
     [posts]
   );
 
+  const toggleHidden = useCallback(
+    async (id: string) => {
+      const current = posts.find((p) => p.id === id);
+      if (!current) return;
+      const next = !current.isHidden;
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("posts")
+        .update({ is_hidden: next })
+        .eq("id", id);
+      if (error) throw error;
+      setPosts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, isHidden: next } : p))
+      );
+    },
+    [posts]
+  );
+
   return {
     posts,
     isLoaded,
@@ -176,5 +197,6 @@ export function usePosts() {
     incrementViewCount,
     incrementLikeCount,
     getPostById,
+    toggleHidden,
   };
 }

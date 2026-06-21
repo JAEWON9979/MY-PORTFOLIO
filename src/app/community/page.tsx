@@ -29,7 +29,7 @@ const SORT_OPTIONS: CommunitySort[] = [
 ];
 
 export default function CommunityPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { posts, isLoaded } = usePosts();
   const { comments } = useComments();
   const [filter, setFilter] = useState<CategoryFilterValue>("전체");
@@ -37,14 +37,17 @@ export default function CommunityPage() {
   const [sort, setSort] = useState<CommunitySort>("최신순");
 
   const displayPosts = useMemo(() => {
-    // 1. category filter
-    let result = filter === "전체" ? posts : posts.filter((p) => p.category === filter);
+    // 1. visibility filter (non-admin cannot see hidden posts; RLS also gates at DB level)
+    let result = isAdmin ? posts : posts.filter((p) => !p.isHidden);
 
-    // 2. title search
+    // 2. category filter
+    result = filter === "전체" ? result : result.filter((p) => p.category === filter);
+
+    // 3. title search
     const q = search.trim().toLowerCase();
     if (q) result = result.filter((p) => p.title.toLowerCase().includes(q));
 
-    // 3. sort
+    // 4. sort
     const commentCountMap = new Map<string, number>();
     if (sort === "댓글 많은순") {
       for (const c of comments) {
@@ -68,7 +71,7 @@ export default function CommunityPage() {
           return 0;
       }
     });
-  }, [posts, comments, filter, search, sort]);
+  }, [posts, comments, filter, search, sort, isAdmin]);
 
   const isEmpty = isLoaded && displayPosts.length === 0;
   const isSearchEmpty = isEmpty && (search.trim() !== "" || filter !== "전체");
@@ -122,7 +125,7 @@ export default function CommunityPage() {
               {displayPosts.map((post) => {
                 const count = comments.filter((c) => c.postId === post.id).length;
                 return (
-                  <PostListItem key={post.id} post={post} commentCount={count} />
+                  <PostListItem key={post.id} post={post} commentCount={count} isAdmin={isAdmin} />
                 );
               })}
             </div>

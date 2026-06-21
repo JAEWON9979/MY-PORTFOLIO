@@ -6,11 +6,13 @@ import type { Post } from "@/hooks/usePosts";
 interface PostListItemProps {
   post: Post;
   commentCount: number;
+  isAdmin?: boolean;
 }
 
 export default function PostListItem({
   post,
   commentCount,
+  isAdmin = false,
 }: PostListItemProps) {
   return (
     <Link
@@ -25,6 +27,11 @@ export default function PostListItem({
           <span className="rounded-full bg-zinc-100 px-2 py-0.5 font-medium text-zinc-600">
             {post.category}
           </span>
+          {isAdmin && post.isHidden && (
+            <span className="rounded-full bg-zinc-800 px-2 py-0.5 font-medium text-white">
+              숨김됨
+            </span>
+          )}
           <span>{post.authorName}</span>
         </div>
         <h2 className="mt-1 truncate text-base font-semibold text-zinc-900">

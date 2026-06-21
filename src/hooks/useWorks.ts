@@ -17,6 +17,7 @@ export interface Work {
   fileName: string | null;
   fileSize: number | null;
   date: string;
+  isPublic: boolean;
 }
 
 export type WorkInput = Omit<Work, "id">;
@@ -32,6 +33,7 @@ interface WorkRow {
   file_name: string | null;
   file_size: number | null;
   work_date: string;
+  is_public: boolean;
 }
 
 function fromRow(row: WorkRow): Work {
@@ -46,6 +48,7 @@ function fromRow(row: WorkRow): Work {
     fileName: row.file_name,
     fileSize: row.file_size,
     date: row.work_date,
+    isPublic: row.is_public,
   };
 }
 
@@ -83,6 +86,7 @@ export function useWorks() {
         file_name: input.fileName,
         file_size: input.fileSize,
         work_date: input.date,
+        is_public: input.isPublic,
       })
       .select()
       .single();
@@ -106,6 +110,7 @@ export function useWorks() {
         file_name: input.fileName,
         file_size: input.fileSize,
         work_date: input.date,
+        is_public: input.isPublic,
       })
       .eq("id", id);
     if (error) throw error;

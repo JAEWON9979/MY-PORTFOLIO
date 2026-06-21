@@ -51,6 +51,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
     initialWork?.techTags.join(", ") ?? ""
   );
   const [date, setDate] = useState(initialWork?.date ?? "");
+  const [isPublic, setIsPublic] = useState(initialWork?.isPublic ?? true);
 
   const [currentFile, setCurrentFile] = useState<UploadedFile | null>(
     initialWork?.fileName
@@ -197,6 +198,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
       fileName: currentFile?.name ?? null,
       fileSize: currentFile?.size ?? null,
       date,
+      isPublic,
     });
   };
 
@@ -288,6 +290,37 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
               required
               className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
             />
+          </div>
+
+          {/* Visibility */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-zinc-700">
+              공개 여부
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setIsPublic(true)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  isPublic
+                    ? "bg-zinc-900 text-white"
+                    : "border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                }`}
+              >
+                공개
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsPublic(false)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  !isPublic
+                    ? "bg-zinc-700 text-white"
+                    : "border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                }`}
+              >
+                비공개
+              </button>
+            </div>
           </div>
 
           {/* File upload */}

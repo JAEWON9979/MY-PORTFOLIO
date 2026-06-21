@@ -100,7 +100,7 @@ export default function WorksPage() {
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {displayWorks.map((work) => (
-                <WorkCard key={work.id} work={work} />
+                <WorkCard key={work.id} work={work} isAdmin={isAdmin} />
               ))}
             </div>
           )}
