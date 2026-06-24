@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -9,7 +9,7 @@ import GoalModal from "@/components/goals/GoalModal";
 import CategoryFilter, {
   type CategoryFilterValue,
 } from "@/components/goals/CategoryFilter";
-import { useGoals, type Goal, type GoalCategory, type GoalInput } from "@/hooks/useGoals";
+import { useGoals, type Goal, type GoalInput } from "@/hooks/useGoals";
 import { useAuth } from "@/hooks/useAuth";
 
 interface StatCardProps {
@@ -28,28 +28,45 @@ function StatCard({ label, value, sub }: StatCardProps) {
   );
 }
 
-function categoryCount(goals: Goal[], cat: GoalCategory) {
-  const list = goals.filter((g) => g.category === cat);
-  return { done: list.filter((g) => g.isCompleted).length, total: list.length };
-}
-
 export default function GoalsPage() {
   const { user, isLoaded: authLoaded } = useAuth();
-  const { goals, isLoaded, addGoal, updateGoal, deleteGoal, toggleComplete } =
-    useGoals();
+  const {
+    goals,
+    isLoaded,
+    addGoal,
+    updateGoal,
+    deleteGoal,
+    toggleComplete,
+    spawnRecurringInstances,
+  } = useGoals();
   const [filter, setFilter] = useState<CategoryFilterValue>("전체");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
 
+  // Spawn today's instances for recurring templates once goals are loaded
+  useEffect(() => {
+    if (isLoaded) spawnRecurringInstances().catch(() => {});
+    // run once after initial load
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded]);
+
   const stats = useMemo(() => {
-    const total = goals.length;
-    const done = goals.filter((g) => g.isCompleted).length;
+    const today = new Date().toISOString().slice(0, 10);
+    // 일목표는 오늘 마감일 기준만 카운트 (누적 반복 인스턴스가 통계를 왜곡하지 않도록)
+    const todayIl = goals.filter((g) => g.category === "일목표" && g.deadline === today);
+    const juk = goals.filter((g) => g.category === "주목표");
+    const yeon = goals.filter((g) => g.category === "연목표");
+    const counted = [...todayIl, ...juk, ...yeon];
+    const total = counted.length;
+    const done = counted.filter((g) => g.isCompleted).length;
     const rate = total === 0 ? 0 : Math.round((done / total) * 100);
     return {
       rate,
-      일목표: categoryCount(goals, "일목표"),
-      주목표: categoryCount(goals, "주목표"),
-      연목표: categoryCount(goals, "연목표"),
+      total,
+      done,
+      일목표: { done: todayIl.filter((g) => g.isCompleted).length, total: todayIl.length },
+      주목표: { done: juk.filter((g) => g.isCompleted).length, total: juk.length },
+      연목표: { done: yeon.filter((g) => g.isCompleted).length, total: yeon.length },
     };
   }, [goals]);
 
@@ -134,7 +151,7 @@ export default function GoalsPage() {
               <StatCard
                 label="전체 달성률"
                 value={`${stats.rate}%`}
-                sub={`${goals.filter((g) => g.isCompleted).length}/${goals.length}개 달성`}
+                sub={`${stats.done}/${stats.total}개 달성`}
               />
               <StatCard
                 label="일목표"

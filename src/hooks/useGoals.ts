@@ -12,9 +12,12 @@ export interface Goal {
   category: GoalCategory;
   isCompleted: boolean;
   deadline: string;
+  isRecurring: boolean;
+  recurringTemplateId: string | null;
 }
 
-export type GoalInput = Omit<Goal, "id" | "isCompleted">;
+// recurringTemplateId is set internally when spawning instances, not by the user
+export type GoalInput = Omit<Goal, "id" | "isCompleted" | "recurringTemplateId">;
 
 interface GoalRow {
   id: string;
@@ -23,6 +26,8 @@ interface GoalRow {
   category: GoalCategory;
   is_completed: boolean;
   deadline: string;
+  is_recurring: boolean;
+  recurring_template_id: string | null;
 }
 
 function fromRow(row: GoalRow): Goal {
@@ -33,6 +38,8 @@ function fromRow(row: GoalRow): Goal {
     category: row.category,
     isCompleted: row.is_completed,
     deadline: row.deadline,
+    isRecurring: row.is_recurring,
+    recurringTemplateId: row.recurring_template_id,
   };
 }
 
@@ -70,6 +77,7 @@ export function useGoals() {
         description: input.description,
         category: input.category,
         deadline: input.deadline,
+        is_recurring: input.isRecurring,
         user_id: userId,
       })
       .select()
@@ -89,6 +97,7 @@ export function useGoals() {
         description: input.description,
         category: input.category,
         deadline: input.deadline,
+        is_recurring: input.isRecurring,
       })
       .eq("id", id);
     if (error) throw error;
@@ -122,5 +131,56 @@ export function useGoals() {
     [goals]
   );
 
-  return { goals, isLoaded, addGoal, updateGoal, deleteGoal, toggleComplete };
+  // Called on page entry: for each recurring template, create today's instance if missing.
+  const spawnRecurringInstances = useCallback(async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const templates = goals.filter((g) => g.isRecurring && g.recurringTemplateId === null);
+    if (templates.length === 0) return;
+
+    const supabase = createClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
+    if (!userId) return;
+
+    const spawned: Goal[] = [];
+    for (const tpl of templates) {
+      // Template itself covers today — no spawn needed
+      if (tpl.deadline === today) continue;
+      // Instance for today already exists in local state
+      const exists = goals.some(
+        (g) => g.recurringTemplateId === tpl.id && g.deadline === today
+      );
+      if (exists) continue;
+
+      const { data, error } = await supabase
+        .from("goals")
+        .insert({
+          title: tpl.title,
+          description: tpl.description,
+          category: tpl.category,
+          deadline: today,
+          is_recurring: false,
+          recurring_template_id: tpl.id,
+          user_id: userId,
+        })
+        .select()
+        .single();
+      if (!error && data) spawned.push(fromRow(data as GoalRow));
+    }
+    if (spawned.length > 0) {
+      setGoals((prev) => [...spawned, ...prev]);
+    }
+  }, [goals]);
+
+  return {
+    goals,
+    isLoaded,
+    addGoal,
+    updateGoal,
+    deleteGoal,
+    toggleComplete,
+    spawnRecurringInstances,
+  };
 }

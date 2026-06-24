@@ -52,13 +52,18 @@ export default function GoalCard({ goal, onToggle, onEdit, onDelete }: GoalRowPr
         {goal.title}
       </p>
 
-      {/* Category + deadline (hidden on very small screens) */}
+      {/* Category + recurring + deadline (hidden on very small screens) */}
       <div className="hidden shrink-0 items-center gap-2 sm:flex">
         <span
           className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryStyles[goal.category]}`}
         >
           {goal.category}
         </span>
+        {goal.isRecurring && goal.recurringTemplateId === null && (
+          <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700">
+            반복
+          </span>
+        )}
         <span className="text-xs text-zinc-400">~{goal.deadline}</span>
       </div>
 

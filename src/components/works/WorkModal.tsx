@@ -52,6 +52,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
   );
   const [date, setDate] = useState(initialWork?.date ?? "");
   const [isPublic, setIsPublic] = useState(initialWork?.isPublic ?? true);
+  const [fileIsPublic, setFileIsPublic] = useState(initialWork?.fileIsPublic ?? true);
 
   const [currentFile, setCurrentFile] = useState<UploadedFile | null>(
     initialWork?.fileName
@@ -199,6 +200,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
       fileSize: currentFile?.size ?? null,
       date,
       isPublic,
+      fileIsPublic,
     });
   };
 
@@ -319,6 +321,37 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
                 }`}
               >
                 비공개
+              </button>
+            </div>
+          </div>
+
+          {/* File download access */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-zinc-700">
+              파일 다운로드
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setFileIsPublic(true)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  fileIsPublic
+                    ? "bg-zinc-900 text-white"
+                    : "border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                }`}
+              >
+                다운로드 허용
+              </button>
+              <button
+                type="button"
+                onClick={() => setFileIsPublic(false)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  !fileIsPublic
+                    ? "bg-zinc-700 text-white"
+                    : "border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                }`}
+              >
+                다운로드 제한
               </button>
             </div>
           </div>

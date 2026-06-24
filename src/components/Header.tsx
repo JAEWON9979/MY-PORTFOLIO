@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 const PRIMARY_NAV = [
   { label: "소개", href: "/#about" },
   { label: "목표", href: "/goals" },
+  { label: "일정", href: "/schedule" },
   { label: "학습기록", href: "/works" },
   { label: "커뮤니티", href: "/community" },
 ];

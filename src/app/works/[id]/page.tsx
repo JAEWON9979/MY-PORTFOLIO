@@ -36,6 +36,7 @@ export default function WorkDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editError, setEditError] = useState("");
+  const [downloadBlocked, setDownloadBlocked] = useState(false);
 
   const work = works.find((w) => w.id === params.id) ?? null;
 
@@ -162,16 +163,38 @@ export default function WorkDetailPage() {
                     </p>
                   )}
                 </div>
-                <a
-                  href={work.linkUrl}
-                  download={work.fileName}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-                >
-                  다운로드
-                </a>
+                {isAdmin || work.fileIsPublic ? (
+                  <a
+                    href={work.linkUrl}
+                    download={work.fileName}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                  >
+                    다운로드
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setDownloadBlocked(true)}
+                    className="shrink-0 rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-500 hover:bg-zinc-50"
+                  >
+                    다운로드
+                  </button>
+                )}
               </div>
+              {downloadBlocked && (
+                <div className="mt-3 flex items-center justify-between rounded-lg bg-zinc-50 px-4 py-2.5 text-sm text-zinc-600">
+                  <span>다운로드 권한이 필요합니다.</span>
+                  <button
+                    type="button"
+                    onClick={() => setDownloadBlocked(false)}
+                    className="ml-4 text-xs text-zinc-400 hover:text-zinc-600"
+                  >
+                    닫기
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

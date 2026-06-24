@@ -18,6 +18,12 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
     initialGoal?.category ?? "일목표"
   );
   const [deadline, setDeadline] = useState(initialGoal?.deadline ?? "");
+  const [isRecurring, setIsRecurring] = useState(initialGoal?.isRecurring ?? false);
+
+  const handleCategoryChange = (cat: GoalCategory) => {
+    setCategory(cat);
+    if (cat !== "일목표") setIsRecurring(false);
+  };
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -30,7 +36,7 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !deadline) return;
-    onSubmit({ title, description, category, deadline });
+    onSubmit({ title, description, category, deadline, isRecurring });
   };
 
   return (
@@ -80,7 +86,7 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
               </label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value as GoalCategory)}
+                onChange={(e) => handleCategoryChange(e.target.value as GoalCategory)}
                 className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
               >
                 {categoryOptions.map((opt) => (
@@ -103,6 +109,44 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
               />
             </div>
           </div>
+
+          {/* Recurring toggle — 일목표 only */}
+          {category === "일목표" && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-zinc-700">
+                반복
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsRecurring(false)}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    !isRecurring
+                      ? "bg-zinc-900 text-white"
+                      : "border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                  }`}
+                >
+                  없음
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsRecurring(true)}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    isRecurring
+                      ? "bg-sky-600 text-white"
+                      : "border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                  }`}
+                >
+                  매일 반복
+                </button>
+              </div>
+              {isRecurring && (
+                <p className="mt-1.5 text-xs text-zinc-400">
+                  /goals 페이지 진입 시 오늘 날짜로 자동 생성됩니다.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <button
