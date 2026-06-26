@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -37,23 +37,17 @@ export default function GoalsPage() {
     updateGoal,
     deleteGoal,
     toggleComplete,
-    spawnRecurringInstances,
   } = useGoals();
   const [filter, setFilter] = useState<CategoryFilterValue>("전체");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
 
-  // Spawn today's instances for recurring templates once goals are loaded
-  useEffect(() => {
-    if (isLoaded) spawnRecurringInstances().catch(() => {});
-    // run once after initial load
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded]);
-
   const stats = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
-    // 일목표는 오늘 마감일 기준만 카운트 (누적 반복 인스턴스가 통계를 왜곡하지 않도록)
-    const todayIl = goals.filter((g) => g.category === "일목표" && g.deadline === today);
+    // 일목표: 오늘 날짜 인스턴스만 카운트. isRecurring=true인 템플릿은 제외.
+    const todayIl = goals.filter(
+      (g) => g.category === "일목표" && g.deadline === today && !g.isRecurring
+    );
     const juk = goals.filter((g) => g.category === "주목표");
     const yeon = goals.filter((g) => g.category === "연목표");
     const counted = [...todayIl, ...juk, ...yeon];
@@ -71,8 +65,10 @@ export default function GoalsPage() {
   }, [goals]);
 
   const filteredGoals = useMemo(() => {
-    if (filter === "전체") return goals;
-    return goals.filter((g) => g.category === filter);
+    // Templates (isRecurring=true) are internal — never shown to the user.
+    const visible = goals.filter((g) => !g.isRecurring);
+    if (filter === "전체") return visible;
+    return visible.filter((g) => g.category === filter);
   }, [goals, filter]);
 
   const openAddModal = () => {

@@ -59,7 +59,7 @@ export default function GoalCard({ goal, onToggle, onEdit, onDelete }: GoalRowPr
         >
           {goal.category}
         </span>
-        {goal.isRecurring && goal.recurringTemplateId === null && (
+        {goal.recurringTemplateId !== null && (
           <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700">
             반복
           </span>

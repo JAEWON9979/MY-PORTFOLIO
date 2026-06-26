@@ -17,12 +17,19 @@ export interface Post {
   likeCount: number;
   viewCount: number;
   isHidden: boolean;
+  fileUrl: string | null;
+  fileName: string | null;
+  fileSize: number | null;
 }
 
 export type PostInput = Pick<
   Post,
   "title" | "content" | "category" | "authorName"
->;
+> & {
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileSize?: number | null;
+};
 
 interface PostRow {
   id: string;
@@ -36,6 +43,9 @@ interface PostRow {
   like_count: number;
   view_count: number;
   is_hidden: boolean;
+  file_url: string | null;
+  file_name: string | null;
+  file_size: number | null;
 }
 
 function fromRow(row: PostRow): Post {
@@ -51,7 +61,17 @@ function fromRow(row: PostRow): Post {
     likeCount: row.like_count,
     viewCount: row.view_count,
     isHidden: row.is_hidden,
+    fileUrl: row.file_url,
+    fileName: row.file_name,
+    fileSize: row.file_size,
   };
+}
+
+function extractCommunityFilePath(url: string): string | null {
+  const marker = "/object/public/community-files/";
+  const idx = url.indexOf(marker);
+  if (idx === -1) return null;
+  return url.slice(idx + marker.length);
 }
 
 export function usePosts() {
@@ -87,6 +107,9 @@ export function usePosts() {
         category: input.category,
         author_name: input.authorName,
         user_id: userId,
+        file_url: input.fileUrl ?? null,
+        file_name: input.fileName ?? null,
+        file_size: input.fileSize ?? null,
       })
       .select()
       .single();
@@ -100,32 +123,64 @@ export function usePosts() {
     async (id: string, input: PostInput) => {
       const supabase = createClient();
       const updatedAt = new Date().toISOString();
+      const updateData: Record<string, unknown> = {
+        title: input.title,
+        content: input.content,
+        category: input.category,
+        author_name: input.authorName,
+        updated_at: updatedAt,
+      };
+      if (input.fileUrl !== undefined) updateData.file_url = input.fileUrl;
+      if (input.fileName !== undefined) updateData.file_name = input.fileName;
+      if (input.fileSize !== undefined) updateData.file_size = input.fileSize;
+
       const { error } = await supabase
         .from("posts")
-        .update({
-          title: input.title,
-          content: input.content,
-          category: input.category,
-          author_name: input.authorName,
-          updated_at: updatedAt,
-        })
+        .update(updateData)
         .eq("id", id);
       if (error) throw error;
       setPosts((prev) =>
-        prev.map((post) =>
-          post.id === id ? { ...post, ...input, updatedAt } : post
-        )
+        prev.map((post) => {
+          if (post.id !== id) return post;
+          const updated: Post = {
+            ...post,
+            title: input.title,
+            content: input.content,
+            category: input.category,
+            authorName: input.authorName,
+            updatedAt,
+          };
+          if (input.fileUrl !== undefined) updated.fileUrl = input.fileUrl ?? null;
+          if (input.fileName !== undefined) updated.fileName = input.fileName ?? null;
+          if (input.fileSize !== undefined) updated.fileSize = input.fileSize ?? null;
+          return updated;
+        })
       );
     },
     []
   );
 
-  const deletePost = useCallback(async (id: string) => {
-    const supabase = createClient();
-    const { error } = await supabase.from("posts").delete().eq("id", id);
-    if (error) throw error;
-    setPosts((prev) => prev.filter((post) => post.id !== id));
-  }, []);
+  const deletePost = useCallback(
+    async (id: string) => {
+      const supabase = createClient();
+      const target = posts.find((p) => p.id === id);
+      const { error } = await supabase.from("posts").delete().eq("id", id);
+      if (error) throw error;
+
+      if (target?.fileUrl) {
+        const path = extractCommunityFilePath(target.fileUrl);
+        if (path) {
+          await supabase.storage
+            .from("community-files")
+            .remove([path])
+            .catch(() => {});
+        }
+      }
+
+      setPosts((prev) => prev.filter((post) => post.id !== id));
+    },
+    [posts]
+  );
 
   const incrementViewCount = useCallback(
     async (id: string) => {
