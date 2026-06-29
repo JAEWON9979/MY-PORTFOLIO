@@ -131,6 +131,15 @@ export default function Header() {
                           회원 관리
                         </Link>
                       )}
+                      {isAdmin && (
+                        <Link
+                          href="/grades"
+                          onClick={() => setDropdownOpen(false)}
+                          className="block px-4 py-2.5 text-sm text-zinc-700 hover:bg-zinc-50"
+                        >
+                          학점관리
+                        </Link>
+                      )}
                       <div className="border-t border-zinc-100" />
                       <button
                         type="button"
@@ -204,6 +213,15 @@ export default function Header() {
                   className="rounded-lg px-2 py-2.5 text-sm text-zinc-700 hover:bg-zinc-50"
                 >
                   회원 관리
+                </Link>
+              )}
+              {isAdmin && (
+                <Link
+                  href="/grades"
+                  onClick={closeAll}
+                  className="rounded-lg px-2 py-2.5 text-sm text-zinc-700 hover:bg-zinc-50"
+                >
+                  학점관리
                 </Link>
               )}
               <button
