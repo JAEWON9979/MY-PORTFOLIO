@@ -226,7 +226,7 @@ export default function GradesPage() {
     const gpa = calcGPA(courses);
     const totalCredits = courses.reduce((s, c) => s + c.credit, 0);
     const gyeGongCredits = courses
-      .filter((c) => c.category === "계공")
+      .filter((c) => c.category === "계공" || c.category === "전공")
       .reduce((s, c) => s + c.credit, 0);
     const gyoYangCredits = courses
       .filter((c) => c.category === "교필" || c.category === "교선")
@@ -328,9 +328,9 @@ export default function GradesPage() {
                 sub="학점"
               />
               <StatCard
-                label="계공 학점"
+                label="전공 학점"
                 value={String(stats.gyeGongCredits)}
-                sub="계열공통"
+                sub="계공 + 전공"
               />
               <StatCard
                 label="교양 학점"
