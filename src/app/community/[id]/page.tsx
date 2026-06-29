@@ -9,6 +9,7 @@ import { usePosts, type PostCategory } from "@/hooks/usePosts";
 import { useComments } from "@/hooks/useComments";
 import { useAuth } from "@/hooks/useAuth";
 import { createClient } from "@/lib/supabase/client";
+import { linkify } from "@/utils/linkify";
 
 const categoryOptions: PostCategory[] = ["자유", "정보공유", "질문"];
 
@@ -496,7 +497,7 @@ export default function CommunityPostPage() {
                   </div>
 
                   <p className="mt-6 whitespace-pre-wrap text-zinc-700">
-                    {post.content}
+                    {linkify(post.content)}
                   </p>
 
                   {/* File attachment box */}
@@ -609,7 +610,7 @@ export default function CommunityPostPage() {
                           )}
                         </div>
                         <p className="mt-1 text-sm text-zinc-700">
-                          {comment.content}
+                          {linkify(comment.content)}
                         </p>
                       </li>
                     );
