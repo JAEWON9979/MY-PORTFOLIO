@@ -12,12 +12,16 @@ export interface Goal {
   category: GoalCategory;
   isCompleted: boolean;
   deadline: string;
-  isRecurring: boolean;
   recurringTemplateId: string | null;
 }
 
-// recurringTemplateId is set internally when spawning instances, not by the user
-export type GoalInput = Omit<Goal, "id" | "isCompleted" | "recurringTemplateId">;
+export interface GoalInput {
+  title: string;
+  description: string;
+  category: GoalCategory;
+  deadline: string;
+  isRecurring: boolean; // 페이지에서 라우팅에만 사용, DB에는 저장 안 함
+}
 
 interface GoalRow {
   id: string;
@@ -38,90 +42,73 @@ function fromRow(row: GoalRow): Goal {
     category: row.category,
     isCompleted: row.is_completed,
     deadline: row.deadline,
-    isRecurring: row.is_recurring,
     recurringTemplateId: row.recurring_template_id,
   };
+}
+
+// recurring_templates 목록을 받아 오늘 날짜로 아직 없는 인스턴스만 생성
+export async function spawnTodayInstances(
+  templates: { id: string; title: string }[],
+  userId: string
+): Promise<Goal[]> {
+  if (!templates.length || !userId) return [];
+  const supabase = createClient();
+  const today = new Date().toISOString().slice(0, 10);
+
+  // 오늘 이미 생성된 인스턴스의 template id 수집
+  const { data: existing } = await supabase
+    .from("goals")
+    .select("recurring_template_id")
+    .eq("user_id", userId)
+    .eq("deadline", today)
+    .not("recurring_template_id", "is", null);
+
+  const existingIds = new Set(
+    (existing ?? []).map(
+      (g: { recurring_template_id: string }) => g.recurring_template_id
+    )
+  );
+
+  const spawned: Goal[] = [];
+  for (const tpl of templates) {
+    if (existingIds.has(tpl.id)) continue;
+    const { data, error } = await supabase
+      .from("goals")
+      .insert({
+        title: tpl.title,
+        description: "",
+        category: "일목표",
+        deadline: today,
+        is_recurring: false,
+        recurring_template_id: tpl.id,
+        user_id: userId,
+      })
+      .select()
+      .single();
+    if (!error && data) spawned.push(fromRow(data as GoalRow));
+  }
+  return spawned;
 }
 
 export function useGoals() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Single init: fetch goals, spawn today's recurring instances, THEN set isLoaded.
-  // This guarantees stats are computed only after spawning is done.
-  useEffect(() => {
-    let cancelled = false;
-
-    async function init() {
-      const supabase = createClient();
-
-      const [{ data: sessionData }, { data, error }] = await Promise.all([
-        supabase.auth.getSession(),
-        supabase
-          .from("goals")
-          .select("*")
-          .order("created_at", { ascending: false }),
-      ]);
-
-      if (cancelled) return;
-      if (error || !data) {
-        setIsLoaded(true);
-        return;
-      }
-
-      const loaded = (data as GoalRow[]).map(fromRow);
-      const userId = sessionData?.session?.user?.id;
-
-      if (userId) {
-        const today = new Date().toISOString().slice(0, 10);
-        const templates = loaded.filter(
-          (g) => g.isRecurring && g.recurringTemplateId === null
-        );
-        const toSpawn = templates.filter(
-          (tpl) =>
-            !loaded.some(
-              (g) => g.recurringTemplateId === tpl.id && g.deadline === today
-            )
-        );
-
-        const spawned: Goal[] = [];
-        for (const tpl of toSpawn) {
-          const { data: row, error: spawnErr } = await supabase
-            .from("goals")
-            .insert({
-              title: tpl.title,
-              description: tpl.description,
-              category: tpl.category,
-              deadline: today,
-              is_recurring: false,
-              recurring_template_id: tpl.id,
-              user_id: userId,
-            })
-            .select()
-            .single();
-          if (!spawnErr && row) spawned.push(fromRow(row as GoalRow));
-        }
-
-        if (!cancelled) {
-          setGoals([...spawned, ...loaded]);
-          setIsLoaded(true);
-        }
-      } else {
-        if (!cancelled) {
-          setGoals(loaded);
-          setIsLoaded(true);
-        }
-      }
+  const refresh = useCallback(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("goals")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (!error && data) {
+      setGoals((data as GoalRow[]).map(fromRow));
     }
-
-    init().catch(() => {
-      if (!cancelled) setIsLoaded(true);
-    });
-
-    return () => {
-      cancelled = true;
-    };
+    setIsLoaded(true);
   }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   const addGoal = useCallback(async (input: GoalInput) => {
     const supabase = createClient();
@@ -137,39 +124,13 @@ export function useGoals() {
         description: input.description,
         category: input.category,
         deadline: input.deadline,
-        is_recurring: input.isRecurring,
+        is_recurring: false,
         user_id: userId,
       })
       .select()
       .single();
     if (error) throw error;
     const newGoal = fromRow(data as GoalRow);
-
-    // Recurring goal: always spawn today's instance immediately.
-    // The template (isRecurring=true) is hidden from the UI; only the spawned
-    // instance is shown to the user and counted in stats.
-    const today = new Date().toISOString().slice(0, 10);
-    if (input.isRecurring) {
-      const { data: spawnData, error: spawnErr } = await supabase
-        .from("goals")
-        .insert({
-          title: input.title,
-          description: input.description,
-          category: input.category,
-          deadline: today,
-          is_recurring: false,
-          recurring_template_id: newGoal.id,
-          user_id: userId,
-        })
-        .select()
-        .single();
-      if (!spawnErr && spawnData) {
-        const spawned = fromRow(spawnData as GoalRow);
-        setGoals((prev) => [spawned, newGoal, ...prev]);
-        return newGoal;
-      }
-    }
-
     setGoals((prev) => [newGoal, ...prev]);
     return newGoal;
   }, []);
@@ -183,12 +144,13 @@ export function useGoals() {
         description: input.description,
         category: input.category,
         deadline: input.deadline,
-        is_recurring: input.isRecurring,
       })
       .eq("id", id);
     if (error) throw error;
     setGoals((prev) =>
-      prev.map((goal) => (goal.id === id ? { ...goal, ...input } : goal))
+      prev.map((goal) =>
+        goal.id === id ? { ...goal, ...input } : goal
+      )
     );
   }, []);
 
@@ -217,53 +179,13 @@ export function useGoals() {
     [goals]
   );
 
-  // Kept for external use (e.g. after adding a recurring goal mid-session).
-  const spawnRecurringInstances = useCallback(async () => {
-    const today = new Date().toISOString().slice(0, 10);
-    const templates = goals.filter((g) => g.isRecurring && g.recurringTemplateId === null);
-    if (templates.length === 0) return;
-
-    const supabase = createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const userId = session?.user?.id;
-    if (!userId) return;
-
-    const spawned: Goal[] = [];
-    for (const tpl of templates) {
-      const exists = goals.some(
-        (g) => g.recurringTemplateId === tpl.id && g.deadline === today
-      );
-      if (exists) continue;
-
-      const { data, error } = await supabase
-        .from("goals")
-        .insert({
-          title: tpl.title,
-          description: tpl.description,
-          category: tpl.category,
-          deadline: today,
-          is_recurring: false,
-          recurring_template_id: tpl.id,
-          user_id: userId,
-        })
-        .select()
-        .single();
-      if (!error && data) spawned.push(fromRow(data as GoalRow));
-    }
-    if (spawned.length > 0) {
-      setGoals((prev) => [...spawned, ...prev]);
-    }
-  }, [goals]);
-
   return {
     goals,
     isLoaded,
+    refresh,
     addGoal,
     updateGoal,
     deleteGoal,
     toggleComplete,
-    spawnRecurringInstances,
   };
 }

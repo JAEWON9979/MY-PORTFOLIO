@@ -12,13 +12,15 @@ interface GoalModalProps {
 }
 
 export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalProps) {
+  const isEdit = !!initialGoal;
+
   const [title, setTitle] = useState(initialGoal?.title ?? "");
   const [description, setDescription] = useState(initialGoal?.description ?? "");
   const [category, setCategory] = useState<GoalCategory>(
     initialGoal?.category ?? "일목표"
   );
   const [deadline, setDeadline] = useState(initialGoal?.deadline ?? "");
-  const [isRecurring, setIsRecurring] = useState(initialGoal?.isRecurring ?? false);
+  const [isRecurring, setIsRecurring] = useState(false); // 새 목표 추가 시에만
 
   const handleCategoryChange = (cat: GoalCategory) => {
     setCategory(cat);
@@ -35,7 +37,9 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !deadline) return;
+    if (!title.trim()) return;
+    // 반복 목표는 deadline 불필요 (오늘 날짜로 자동 생성)
+    if (!isRecurring && !deadline) return;
     onSubmit({ title, description, category, deadline, isRecurring });
   };
 
@@ -49,13 +53,12 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="mb-4 text-lg font-bold text-zinc-900">
-          {initialGoal ? "목표 수정" : "목표 추가"}
+          {isEdit ? "목표 수정" : "목표 추가"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* 제목 */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-zinc-700">
-              제목
-            </label>
+            <label className="mb-1 block text-sm font-medium text-zinc-700">제목</label>
             <input
               type="text"
               value={title}
@@ -66,10 +69,9 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
             />
           </div>
 
+          {/* 설명 */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-zinc-700">
-              설명
-            </label>
+            <label className="mb-1 block text-sm font-medium text-zinc-700">설명</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -79,43 +81,39 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
             />
           </div>
 
+          {/* 카테고리 + 마감일 */}
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="mb-1 block text-sm font-medium text-zinc-700">
-                카테고리
-              </label>
+              <label className="mb-1 block text-sm font-medium text-zinc-700">카테고리</label>
               <select
                 value={category}
                 onChange={(e) => handleCategoryChange(e.target.value as GoalCategory)}
                 className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
               >
                 {categoryOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
+                  <option key={opt} value={opt}>{opt}</option>
                 ))}
               </select>
             </div>
-            <div className="flex-1">
-              <label className="mb-1 block text-sm font-medium text-zinc-700">
-                마감일
-              </label>
-              <input
-                type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                required
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
-              />
-            </div>
+            {/* 반복 ON이면 마감일 숨김 */}
+            {!isRecurring && (
+              <div className="flex-1">
+                <label className="mb-1 block text-sm font-medium text-zinc-700">마감일</label>
+                <input
+                  type="date"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                  required
+                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                />
+              </div>
+            )}
           </div>
 
-          {/* Recurring toggle — 일목표 only */}
-          {category === "일목표" && (
+          {/* 반복 토글 — 새 일목표 추가 시에만 표시 */}
+          {!isEdit && category === "일목표" && (
             <div>
-              <label className="mb-1 block text-sm font-medium text-zinc-700">
-                반복
-              </label>
+              <label className="mb-1 block text-sm font-medium text-zinc-700">반복</label>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -142,7 +140,7 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
               </div>
               {isRecurring && (
                 <p className="mt-1.5 text-xs text-zinc-400">
-                  /goals 페이지 진입 시 오늘 날짜로 자동 생성됩니다.
+                  페이지 진입 시 오늘 날짜로 자동 생성됩니다.
                 </p>
               )}
             </div>
