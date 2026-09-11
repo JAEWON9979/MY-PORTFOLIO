@@ -13,8 +13,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JAEWON'S PORTFOLIO",
+  metadataBase: new URL("https://jaewon.homes"),
+  title: {
+    default: "JAEWON'S PORTFOLIO",
+    template: "%s | 김재원 포트폴리오",
+  },
   description: "개인 소개 포트폴리오",
+  openGraph: {
+    title: "JAEWON'S PORTFOLIO",
+    description: "개인 소개 포트폴리오",
+    url: "https://jaewon.homes",
+    siteName: "JAEWON'S PORTFOLIO",
+    locale: "ko_KR",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

@@ -70,6 +70,14 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
   const [fileError, setFileError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(
+    initialWork?.thumbnailUrl ?? null
+  );
+  const [isThumbnailUploading, setIsThumbnailUploading] = useState(false);
+  const [thumbnailProgress, setThumbnailProgress] = useState(0);
+  const [thumbnailError, setThumbnailError] = useState("");
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -163,6 +171,90 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
     }
   };
 
+  const handleThumbnailFile = async (file: File) => {
+    setThumbnailError("");
+
+    const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+    if (![".jpg", ".jpeg", ".png", ".webp"].includes(ext)) {
+      setThumbnailError("JPG, PNG, WEBP 이미지만 업로드 가능합니다.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setThumbnailError("5MB 이하의 이미지만 업로드 가능합니다.");
+      return;
+    }
+
+    setIsThumbnailUploading(true);
+    setThumbnailProgress(0);
+
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) throw new Error("로그인이 필요합니다.");
+
+      const rand = Math.random().toString(36).slice(2, 7);
+      const storagePath = `thumbnails/${Date.now()}-${rand}${ext}`;
+      const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setThumbnailProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            try {
+              const err = JSON.parse(xhr.responseText) as {
+                error?: string;
+                message?: string;
+              };
+              reject(new Error(err.error ?? err.message ?? `오류 ${xhr.status}`));
+            } catch {
+              reject(new Error(`업로드 오류 (${xhr.status})`));
+            }
+          }
+        };
+        xhr.onerror = () => reject(new Error("네트워크 오류"));
+        xhr.open(
+          "POST",
+          `${projectUrl}/storage/v1/object/works-files/${storagePath}`
+        );
+        xhr.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
+        xhr.setRequestHeader("apikey", anonKey);
+        xhr.setRequestHeader(
+          "Content-Type",
+          file.type || "application/octet-stream"
+        );
+        xhr.send(file);
+      });
+
+      const { data: urlData } = supabase.storage
+        .from("works-files")
+        .getPublicUrl(storagePath);
+
+      setThumbnailUrl(urlData.publicUrl);
+    } catch (err) {
+      setThumbnailError(
+        err instanceof Error ? err.message : "업로드 중 오류가 발생했습니다."
+      );
+    } finally {
+      setIsThumbnailUploading(false);
+    }
+  };
+
+  const handleThumbnailInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleThumbnailFile(file);
+    e.target.value = "";
+  };
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
@@ -201,6 +293,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
       date,
       isPublic,
       fileIsPublic,
+      thumbnailUrl,
     });
   };
 
@@ -356,6 +449,93 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
             </div>
           </div>
 
+          {/* Thumbnail image */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-zinc-700">
+              썸네일 이미지
+            </label>
+
+            {!thumbnailUrl && !isThumbnailUploading && (
+              <div
+                onClick={() => thumbnailInputRef.current?.click()}
+                className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-zinc-300 py-8 transition-colors hover:border-zinc-400"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="text-zinc-400"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                  />
+                </svg>
+                <p className="mt-2 text-sm text-zinc-500">클릭해서 썸네일 업로드</p>
+                <p className="mt-0.5 text-xs text-zinc-400">JPG, PNG, WEBP · 최대 5MB</p>
+              </div>
+            )}
+
+            <input
+              ref={thumbnailInputRef}
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp"
+              className="hidden"
+              onChange={handleThumbnailInput}
+            />
+
+            {isThumbnailUploading && (
+              <div className="rounded-lg border border-zinc-200 px-4 py-3">
+                <div className="mb-1.5 flex items-center justify-between text-xs text-zinc-500">
+                  <span>업로드 중...</span>
+                  <span>{thumbnailProgress}%</span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-100">
+                  <div
+                    className="h-full rounded-full bg-zinc-900 transition-all duration-150"
+                    style={{ width: `${thumbnailProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {thumbnailUrl && !isThumbnailUploading && (
+              <div className="relative overflow-hidden rounded-lg border border-zinc-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={thumbnailUrl}
+                  alt="썸네일 미리보기"
+                  className="aspect-video w-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setThumbnailUrl(null)}
+                  aria-label="썸네일 제거"
+                  className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path strokeLinecap="round" d="M3 3l10 10M13 3L3 13" />
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            {thumbnailError && (
+              <p className="mt-1.5 text-xs text-red-600">{thumbnailError}</p>
+            )}
+          </div>
+
           {/* File upload */}
           <div>
             <label className="mb-1 block text-sm font-medium text-zinc-700">
@@ -479,7 +659,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
             </button>
             <button
               type="submit"
-              disabled={isUploading}
+              disabled={isUploading || isThumbnailUploading}
               className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
             >
               저장

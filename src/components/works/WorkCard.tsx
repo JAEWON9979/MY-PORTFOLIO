@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Work } from "@/hooks/useWorks";
 
@@ -33,48 +34,62 @@ export default function WorkCard({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") router.push(`/works/${work.id}`);
       }}
-      className="flex cursor-pointer flex-col rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+      className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
     >
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span
-            className={`rounded-full px-2.5 py-1 text-xs font-medium ${categoryStyles[work.category]}`}
-          >
-            {work.category}
-          </span>
-          {isAdmin && !work.isPublic && (
-            <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-white">
-              비공개
-            </span>
-          )}
+      {work.thumbnailUrl && (
+        <div className="relative aspect-video w-full bg-zinc-100">
+          <Image
+            src={work.thumbnailUrl}
+            alt={work.title}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover"
+          />
         </div>
-        <span
-          className="text-lg"
-          role="img"
-          aria-label={work.fileType}
-          title={work.fileType}
-        >
-          {fileTypeIcon[work.fileType]}
-        </span>
-      </div>
+      )}
 
-      <h3 className="text-base font-semibold text-zinc-900">{work.title}</h3>
-      <p className="mt-1 line-clamp-2 flex-1 text-sm text-zinc-600">
-        {work.description}
-      </p>
-
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {work.techTags.map((tag) => (
+      <div className="flex flex-1 flex-col p-5">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span
+              className={`rounded-full px-2.5 py-1 text-xs font-medium ${categoryStyles[work.category]}`}
+            >
+              {work.category}
+            </span>
+            {isAdmin && !work.isPublic && (
+              <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-white">
+                비공개
+              </span>
+            )}
+          </div>
           <span
-            key={tag}
-            className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600"
+            className="text-lg"
+            role="img"
+            aria-label={work.fileType}
+            title={work.fileType}
           >
-            {tag}
+            {fileTypeIcon[work.fileType]}
           </span>
-        ))}
-      </div>
+        </div>
 
-      <p className="mt-4 text-xs text-zinc-500">{work.date}</p>
+        <h3 className="text-base font-semibold text-zinc-900">{work.title}</h3>
+        <p className="mt-1 line-clamp-2 flex-1 text-sm text-zinc-600">
+          {work.description}
+        </p>
+
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {work.techTags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        <p className="mt-4 text-xs text-zinc-500">{work.date}</p>
+      </div>
     </div>
   );
 }

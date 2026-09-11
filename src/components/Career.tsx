@@ -9,12 +9,6 @@ const careerItems = [
     org: "공공인재빅데이터융합학",
     description: "2학년",
   },
-  {
-    period: "2018.03 - 2020.02",
-    title: "직책 / 부서명",
-    org: "기관 또는 회사명",
-    description: "담당했던 업무 내용을 간략히 작성해주세요.",
-  },
 ];
 
 export default function Career() {

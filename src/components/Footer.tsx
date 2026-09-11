@@ -4,8 +4,12 @@ export default function Footer() {
       id="contact"
       className="border-t border-zinc-200 px-6 py-10 text-center text-sm text-zinc-600"
     >
-      <p>이메일: email@example.com</p>
-      <p className="mt-1">연락처: 010-0000-0000</p>
+      <p>
+        이메일:{" "}
+        <a href="mailto:rlawodnjs9979@hs.ac.kr" className="hover:text-zinc-900">
+          rlawodnjs9979@hs.ac.kr
+        </a>
+      </p>
     </footer>
   );
 }

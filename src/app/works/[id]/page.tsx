@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WorkModal from "@/components/works/WorkModal";
@@ -101,6 +102,20 @@ export default function WorkDetailPage() {
             </svg>
             목록으로
           </Link>
+
+          {/* Thumbnail */}
+          {work.thumbnailUrl && (
+            <div className="relative mt-6 aspect-video w-full overflow-hidden rounded-xl bg-zinc-100">
+              <Image
+                src={work.thumbnailUrl}
+                alt={work.title}
+                fill
+                sizes="(min-width: 768px) 768px, 100vw"
+                className="object-cover"
+                priority
+              />
+            </div>
+          )}
 
           {/* Category + file type badge */}
           <div className="mt-6 flex items-center gap-2">

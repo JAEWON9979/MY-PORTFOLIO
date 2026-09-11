@@ -19,6 +19,7 @@ export interface Work {
   date: string;
   isPublic: boolean;
   fileIsPublic: boolean;
+  thumbnailUrl: string | null;
 }
 
 export type WorkInput = Omit<Work, "id">;
@@ -36,6 +37,7 @@ interface WorkRow {
   work_date: string;
   is_public: boolean;
   file_is_public: boolean;
+  thumbnail_url: string | null;
 }
 
 function fromRow(row: WorkRow): Work {
@@ -52,6 +54,7 @@ function fromRow(row: WorkRow): Work {
     date: row.work_date,
     isPublic: row.is_public,
     fileIsPublic: row.file_is_public,
+    thumbnailUrl: row.thumbnail_url,
   };
 }
 
@@ -91,6 +94,7 @@ export function useWorks() {
         work_date: input.date,
         is_public: input.isPublic,
         file_is_public: input.fileIsPublic,
+        thumbnail_url: input.thumbnailUrl,
       })
       .select()
       .single();
@@ -116,6 +120,7 @@ export function useWorks() {
         work_date: input.date,
         is_public: input.isPublic,
         file_is_public: input.fileIsPublic,
+        thumbnail_url: input.thumbnailUrl,
       })
       .eq("id", id);
     if (error) throw error;
