@@ -5,7 +5,13 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScheduleModal from "@/components/schedule/ScheduleModal";
-import { useSchedules, type Schedule, type ScheduleInput } from "@/hooks/useSchedules";
+import DeleteConfirmDialog from "@/components/schedule/DeleteConfirmDialog";
+import {
+  useSchedules,
+  type Schedule,
+  type ScheduleInput,
+  type RecurrenceInput,
+} from "@/hooks/useSchedules";
 import { useAuth } from "@/hooks/useAuth";
 
 // ── calendar helpers ──────────────────────────────────────────────────────────
@@ -60,9 +66,17 @@ export default function SchedulePage() {
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth()); // 0-indexed
   const [selectedDate, setSelectedDate] = useState<string | null>(today);
-  const { schedules, isLoaded, addSchedule, updateSchedule, deleteSchedule } =
-    useSchedules(year, month);
+  const {
+    schedules,
+    isLoaded,
+    addSchedule,
+    addRecurringSchedule,
+    updateSchedule,
+    deleteSchedule,
+    deleteRecurrence,
+  } = useSchedules(year, month);
   const [modal, setModal] = useState<ModalMode | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
 
   const calendarDays = useMemo(() => buildCalendarDays(year, month), [year, month]);
 
@@ -92,26 +106,50 @@ export default function SchedulePage() {
     setSelectedDate(dateStr === selectedDate ? null : dateStr);
   };
 
-  const handleModalSubmit = async (input: ScheduleInput) => {
+  const handleModalSubmit = async (input: ScheduleInput, recurrence?: RecurrenceInput) => {
     if (!modal) return;
     try {
       if (modal.type === "edit") {
         await updateSchedule(modal.schedule.id, input);
+      } else if (recurrence) {
+        await addRecurringSchedule(input, recurrence);
       } else {
         await addSchedule(input);
       }
       setModal(null);
-    } catch {
-      alert("저장 중 오류가 발생했습니다.");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "저장 중 오류가 발생했습니다.");
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteClick = (schedule: Schedule) => {
+    if (schedule.recurrenceId) {
+      setDeleteTarget(schedule);
+      return;
+    }
     if (!confirm("이 일정을 삭제하시겠습니까?")) return;
+    deleteSchedule(schedule.id).catch(() => alert("삭제 중 오류가 발생했습니다."));
+  };
+
+  const handleDeleteOne = async () => {
+    if (!deleteTarget) return;
     try {
-      await deleteSchedule(id);
+      await deleteSchedule(deleteTarget.id);
     } catch {
       alert("삭제 중 오류가 발생했습니다.");
+    } finally {
+      setDeleteTarget(null);
+    }
+  };
+
+  const handleDeleteSeries = async () => {
+    if (!deleteTarget?.recurrenceId) return;
+    try {
+      await deleteRecurrence(deleteTarget.recurrenceId);
+    } catch {
+      alert("삭제 중 오류가 발생했습니다.");
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -323,7 +361,14 @@ export default function SchedulePage() {
                           key={s.id}
                           className="rounded-xl border border-zinc-100 bg-zinc-50 p-3"
                         >
-                          <p className="text-sm font-medium text-zinc-900">{s.title}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-sm font-medium text-zinc-900">{s.title}</p>
+                            {s.recurrenceId && (
+                              <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500">
+                                반복
+                              </span>
+                            )}
+                          </div>
                           {s.description && (
                             <p className="mt-0.5 text-xs text-zinc-500">{s.description}</p>
                           )}
@@ -337,7 +382,7 @@ export default function SchedulePage() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => handleDelete(s.id)}
+                              onClick={() => handleDeleteClick(s)}
                               className="text-xs text-zinc-400 hover:text-red-600"
                             >
                               삭제
@@ -366,6 +411,15 @@ export default function SchedulePage() {
           initialSchedule={modal.type === "edit" ? modal.schedule : null}
           onClose={() => setModal(null)}
           onSubmit={handleModalSubmit}
+        />
+      )}
+
+      {/* Delete confirm dialog */}
+      {deleteTarget && (
+        <DeleteConfirmDialog
+          onCancel={() => setDeleteTarget(null)}
+          onDeleteOne={handleDeleteOne}
+          onDeleteSeries={handleDeleteSeries}
         />
       )}
     </div>

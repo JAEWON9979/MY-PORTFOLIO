@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Schedule, ScheduleInput } from "@/hooks/useSchedules";
+import type { Schedule, ScheduleInput, RecurrenceInput } from "@/hooks/useSchedules";
 
 interface ScheduleModalProps {
   initialDate: string;
   initialSchedule?: Schedule | null;
   onClose: () => void;
-  onSubmit: (input: ScheduleInput) => void;
+  onSubmit: (input: ScheduleInput, recurrence?: RecurrenceInput) => void;
 }
+
+const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 export default function ScheduleModal({
   initialDate,
@@ -20,6 +22,14 @@ export default function ScheduleModal({
   const [description, setDescription] = useState(initialSchedule?.description ?? "");
   const [date, setDate] = useState(initialSchedule?.date ?? initialDate);
 
+  const isAddMode = !initialSchedule;
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [frequency, setFrequency] = useState<"daily" | "weekly">("weekly");
+  const [interval, setInterval] = useState(1);
+  const [weekdays, setWeekdays] = useState<number[]>([]);
+  const [endDate, setEndDate] = useState("");
+  const [recurrenceError, setRecurrenceError] = useState("");
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -28,9 +38,39 @@ export default function ScheduleModal({
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  const toggleWeekday = (day: number) => {
+    setWeekdays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort()
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !date) return;
+    setRecurrenceError("");
+
+    if (isAddMode && isRecurring) {
+      if (!endDate || endDate < date) {
+        setRecurrenceError("종료일은 시작일 이후여야 합니다.");
+        return;
+      }
+      if (frequency === "weekly" && weekdays.length === 0) {
+        setRecurrenceError("요일을 하나 이상 선택해주세요.");
+        return;
+      }
+      onSubmit(
+        { title, description, date },
+        {
+          frequency,
+          interval,
+          weekdays: frequency === "weekly" ? weekdays : undefined,
+          startDate: date,
+          endDate,
+        }
+      );
+      return;
+    }
+
     onSubmit({ title, description, date });
   };
 
@@ -87,6 +127,82 @@ export default function ScheduleModal({
               className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
             />
           </div>
+
+          {isAddMode && (
+            <div className="rounded-lg border border-zinc-200 p-3">
+              <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+                <input
+                  type="checkbox"
+                  checked={isRecurring}
+                  onChange={(e) => setIsRecurring(e.target.checked)}
+                  className="h-4 w-4 rounded border-zinc-300"
+                />
+                반복 설정
+              </label>
+
+              {isRecurring && (
+                <div className="mt-3 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={frequency}
+                      onChange={(e) => setFrequency(e.target.value as "daily" | "weekly")}
+                      className="rounded-lg border border-zinc-300 px-2 py-1.5 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                    >
+                      <option value="daily">매일</option>
+                      <option value="weekly">매주</option>
+                    </select>
+                    <input
+                      type="number"
+                      min={1}
+                      value={interval}
+                      onChange={(e) => setInterval(Math.max(1, Number(e.target.value) || 1))}
+                      className="w-16 rounded-lg border border-zinc-300 px-2 py-1.5 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                    />
+                    <span className="text-sm text-zinc-600">
+                      {frequency === "daily" ? "일마다" : "주마다"}
+                    </span>
+                  </div>
+
+                  {frequency === "weekly" && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {WEEKDAY_LABELS.map((label, day) => (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => toggleWeekday(day)}
+                          className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${
+                            weekdays.includes(day)
+                              ? "bg-zinc-900 text-white"
+                              : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-zinc-700">
+                      종료일
+                    </label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      min={date}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      required={isRecurring}
+                      className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                    />
+                  </div>
+
+                  {recurrenceError && (
+                    <p className="text-xs text-red-600">{recurrenceError}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <button
