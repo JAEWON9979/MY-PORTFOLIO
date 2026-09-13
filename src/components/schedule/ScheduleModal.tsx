@@ -21,6 +21,9 @@ export default function ScheduleModal({
   const [title, setTitle] = useState(initialSchedule?.title ?? "");
   const [description, setDescription] = useState(initialSchedule?.description ?? "");
   const [date, setDate] = useState(initialSchedule?.date ?? initialDate);
+  const [reminderEnabled, setReminderEnabled] = useState(
+    initialSchedule?.reminderEnabled ?? true
+  );
 
   const isAddMode = !initialSchedule;
   const [isRecurring, setIsRecurring] = useState(false);
@@ -59,7 +62,7 @@ export default function ScheduleModal({
         return;
       }
       onSubmit(
-        { title, description, date },
+        { title, description, date, reminderEnabled },
         {
           frequency,
           interval,
@@ -71,7 +74,7 @@ export default function ScheduleModal({
       return;
     }
 
-    onSubmit({ title, description, date });
+    onSubmit({ title, description, date, reminderEnabled });
   };
 
   return (
@@ -126,6 +129,18 @@ export default function ScheduleModal({
               maxLength={500}
               className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
             />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+              <input
+                type="checkbox"
+                checked={reminderEnabled}
+                onChange={(e) => setReminderEnabled(e.target.checked)}
+                className="h-4 w-4 rounded border-zinc-300"
+              />
+              하루 전 이메일 알림 받기
+            </label>
           </div>
 
           {isAddMode && (

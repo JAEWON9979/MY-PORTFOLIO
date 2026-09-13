@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
     .from("schedules")
     .select("id, title, description, user_id")
     .eq("date", targetDate)
+    .eq("reminder_enabled", true)
     .is("reminder_sent_at", null);
 
   if (error) {

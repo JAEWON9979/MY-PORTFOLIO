@@ -9,6 +9,7 @@ export interface Schedule {
   description: string;
   date: string; // YYYY-MM-DD
   recurrenceId: string | null;
+  reminderEnabled: boolean;
 }
 
 export type ScheduleInput = Omit<Schedule, "id" | "recurrenceId">;
@@ -31,6 +32,7 @@ interface ScheduleRow {
   description: string;
   date: string;
   recurrence_id: string | null;
+  reminder_enabled: boolean;
 }
 
 function fromRow(row: ScheduleRow): Schedule {
@@ -40,6 +42,7 @@ function fromRow(row: ScheduleRow): Schedule {
     description: row.description,
     date: row.date,
     recurrenceId: row.recurrence_id,
+    reminderEnabled: row.reminder_enabled,
   };
 }
 
@@ -119,7 +122,7 @@ export function useSchedules(year: number, month: number) {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("schedules")
-      .select("id, title, description, date, recurrence_id")
+      .select("id, title, description, date, recurrence_id, reminder_enabled")
       .gte("date", start)
       .lte("date", end)
       .order("date", { ascending: true });
@@ -147,8 +150,9 @@ export function useSchedules(year: number, month: number) {
         description: input.description,
         date: input.date,
         user_id: userId,
+        reminder_enabled: input.reminderEnabled,
       })
-      .select("id, title, description, date, recurrence_id")
+      .select("id, title, description, date, recurrence_id, reminder_enabled")
       .single();
     if (error) throw error;
     const newSchedule = fromRow(data as ScheduleRow);
@@ -188,6 +192,7 @@ export function useSchedules(year: number, month: number) {
           date,
           user_id: userId,
           recurrence_id: recurrenceRow.id,
+          reminder_enabled: base.reminderEnabled,
         }))
       );
       if (insertError) throw insertError;
@@ -205,6 +210,7 @@ export function useSchedules(year: number, month: number) {
         title: input.title,
         description: input.description,
         date: input.date,
+        reminder_enabled: input.reminderEnabled,
       })
       .eq("id", id);
     if (error) throw error;
