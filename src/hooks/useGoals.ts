@@ -46,14 +46,18 @@ function fromRow(row: GoalRow): Goal {
   };
 }
 
-// recurring_templates 목록을 받아 오늘 날짜로 아직 없는 인스턴스만 생성
+// recurring_templates 목록을 받아, 오늘이 선택된 요일이면서 아직 없는 인스턴스만 생성
 export async function spawnTodayInstances(
-  templates: { id: string; title: string }[],
+  templates: { id: string; title: string; weekdays: number[] }[],
   userId: string
 ): Promise<Goal[]> {
   if (!templates.length || !userId) return [];
   const supabase = createClient();
   const today = new Date().toISOString().slice(0, 10);
+  const [ty, tm, td] = today.split("-").map(Number);
+  const todayWeekday = new Date(ty, tm - 1, td).getDay();
+  templates = templates.filter((tpl) => tpl.weekdays.includes(todayWeekday));
+  if (!templates.length) return [];
 
   // 오늘 이미 생성된 인스턴스의 template id 수집
   const { data: existing } = await supabase

@@ -109,7 +109,7 @@ export default function GoalsPage() {
     setEditingGoal(null);
   };
 
-  const handleSubmit = async (input: GoalInput) => {
+  const handleSubmit = async (input: GoalInput, weekdays?: number[]) => {
     if (editingGoal) {
       await updateGoal(editingGoal.id, input);
       closeModal();
@@ -117,8 +117,8 @@ export default function GoalsPage() {
     }
 
     if (input.isRecurring && input.category === "일목표") {
-      // recurring_templates에 저장 후 오늘 인스턴스 즉시 생성
-      const tpl = await addTemplate(input.title);
+      // recurring_templates에 저장 후, 오늘이 선택된 요일이면 인스턴스 즉시 생성
+      const tpl = await addTemplate(input.title, weekdays ?? [0, 1, 2, 3, 4, 5, 6]);
       const spawned = await spawnTodayInstances([tpl], user?.id ?? "");
       if (spawned.length > 0) refreshGoals();
     } else {

@@ -8,6 +8,7 @@ export interface RecurringTemplate {
   userId: string;
   title: string;
   createdAt: string;
+  weekdays: number[]; // 0=일..6=토, 생성될 요일
 }
 
 interface TemplateRow {
@@ -15,6 +16,7 @@ interface TemplateRow {
   user_id: string;
   title: string;
   created_at: string;
+  weekdays: number[];
 }
 
 function fromRow(row: TemplateRow): RecurringTemplate {
@@ -23,6 +25,7 @@ function fromRow(row: TemplateRow): RecurringTemplate {
     userId: row.user_id,
     title: row.title,
     createdAt: row.created_at,
+    weekdays: row.weekdays,
   };
 }
 
@@ -51,21 +54,24 @@ export function useRecurringTemplates() {
     refresh();
   }, [refresh]);
 
-  const addTemplate = useCallback(async (title: string): Promise<RecurringTemplate> => {
-    const supabase = createClient();
-    const { data: sessionData } = await supabase.auth.getSession();
-    const userId = sessionData?.session?.user?.id;
-    if (!userId) throw new Error("로그인이 필요합니다.");
-    const { data, error } = await supabase
-      .from("recurring_templates")
-      .insert({ user_id: userId, title })
-      .select()
-      .single();
-    if (error) throw error;
-    const tpl = fromRow(data as TemplateRow);
-    setTemplates((prev) => [...prev, tpl]);
-    return tpl;
-  }, []);
+  const addTemplate = useCallback(
+    async (title: string, weekdays: number[]): Promise<RecurringTemplate> => {
+      const supabase = createClient();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData?.session?.user?.id;
+      if (!userId) throw new Error("로그인이 필요합니다.");
+      const { data, error } = await supabase
+        .from("recurring_templates")
+        .insert({ user_id: userId, title, weekdays })
+        .select()
+        .single();
+      if (error) throw error;
+      const tpl = fromRow(data as TemplateRow);
+      setTemplates((prev) => [...prev, tpl]);
+      return tpl;
+    },
+    []
+  );
 
   const deleteTemplate = useCallback(async (id: string) => {
     const supabase = createClient();

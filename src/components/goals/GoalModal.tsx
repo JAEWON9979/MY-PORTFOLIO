@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import type { Goal, GoalCategory, GoalInput } from "@/hooks/useGoals";
 
 const categoryOptions: GoalCategory[] = ["일목표", "주목표", "연목표"];
+const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
+const ALL_WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
 
 interface GoalModalProps {
   initialGoal?: Goal | null;
   onClose: () => void;
-  onSubmit: (input: GoalInput) => void;
+  onSubmit: (input: GoalInput, weekdays?: number[]) => void;
 }
 
 export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalProps) {
@@ -21,6 +23,14 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
   );
   const [deadline, setDeadline] = useState(initialGoal?.deadline ?? "");
   const [isRecurring, setIsRecurring] = useState(false); // 새 목표 추가 시에만
+  const [weekdays, setWeekdays] = useState<number[]>(ALL_WEEKDAYS);
+  const [weekdayError, setWeekdayError] = useState("");
+
+  const toggleWeekday = (day: number) => {
+    setWeekdays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day].sort()
+    );
+  };
 
   const handleCategoryChange = (cat: GoalCategory) => {
     setCategory(cat);
@@ -40,7 +50,15 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
     if (!title.trim()) return;
     // 반복 목표는 deadline 불필요 (오늘 날짜로 자동 생성)
     if (!isRecurring && !deadline) return;
-    onSubmit({ title, description, category, deadline, isRecurring });
+    setWeekdayError("");
+    if (isRecurring && weekdays.length === 0) {
+      setWeekdayError("요일을 하나 이상 선택해주세요.");
+      return;
+    }
+    onSubmit(
+      { title, description, category, deadline, isRecurring },
+      isRecurring ? weekdays : undefined
+    );
   };
 
   return (
@@ -135,13 +153,34 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
                       : "border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
                   }`}
                 >
-                  매일 반복
+                  반복
                 </button>
               </div>
               {isRecurring && (
-                <p className="mt-1.5 text-xs text-zinc-400">
-                  페이지 진입 시 오늘 날짜로 자동 생성됩니다.
-                </p>
+                <div className="mt-3 space-y-1.5">
+                  <div className="flex flex-wrap gap-1.5">
+                    {WEEKDAY_LABELS.map((label, day) => (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => toggleWeekday(day)}
+                        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${
+                          weekdays.includes(day)
+                            ? "bg-zinc-900 text-white"
+                            : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {weekdayError && (
+                    <p className="text-xs text-red-600">{weekdayError}</p>
+                  )}
+                  <p className="text-xs text-zinc-400">
+                    선택한 요일에 오늘 날짜로 자동 생성됩니다.
+                  </p>
+                </div>
               )}
             </div>
           )}
