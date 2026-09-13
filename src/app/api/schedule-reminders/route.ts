@@ -95,6 +95,9 @@ export async function GET(request: NextRequest) {
     if (res.ok) {
       sentCount += 1;
       sentScheduleIds.push(...items.map((s) => s.id));
+    } else {
+      const body = await res.text();
+      console.error(`[schedule-reminders] Resend 발송 실패 (to: ${email}, status: ${res.status}): ${body}`);
     }
   }
 
