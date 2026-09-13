@@ -3,6 +3,10 @@
     {
       "path": "/api/schedule-reminders",
       "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/goals-cleanup",
+      "schedule": "0 18 * * *"
     }
   ]
 }

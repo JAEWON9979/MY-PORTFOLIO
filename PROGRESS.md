@@ -3,6 +3,7 @@
 완료된 작업과 그 결정 배경을 시간순으로 기록합니다. 최신 항목을 맨 위에 추가하세요.
 
 ## 2026-09-13
+- 지난 일목표 자동 정리 크론 추가: `/api/goals-cleanup`가 매일 KST 03:00에 실행되어 카테고리가 "일목표"이고 마감일이 오늘 이전인 goals를 삭제 (화면에도 다시 안 보이는 데이터라 DB에 계속 쌓이는 걸 방지). 주목표/연목표는 대상 아님. 최초 정리(현재 쌓인 9건)는 수동 실행 없이 오늘 밤 크론이 처리하도록 둠
 - 반복 목표(recurring_templates)에 요일 선택 기능 추가: `weekdays` 컬럼(마이그레이션 0008, 기본값 전체 요일) 신설 및 운영 DB 적용 완료, 목표 추가 모달에 일정 반복 설정과 동일한 요일 선택 UI 적용, `spawnTodayInstances`가 선택된 요일에만 오늘 인스턴스를 생성하도록 변경
 - GitHub Copilot용 지침 파일 `.github/copilot-instructions.md` 신설 (AGENTS.md 내용 기반, Copilot 표준 위치)
 - 일정별 이메일 알림 켜기/끄기 토글 추가: `schedules.reminder_enabled` 컬럼(마이그레이션 0007) 신설 및 운영 DB에 직접 적용 완료, 일정 생성/수정 모달에 체크박스 추가, 리마인더 크론(`/api/schedule-reminders`)에서 꺼진 일정 제외
