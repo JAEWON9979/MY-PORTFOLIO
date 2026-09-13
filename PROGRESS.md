@@ -3,6 +3,7 @@
 완료된 작업과 그 결정 배경을 시간순으로 기록합니다. 최신 항목을 맨 위에 추가하세요.
 
 ## 2026-09-13
+- GitHub Copilot용 지침 파일 `.github/copilot-instructions.md` 신설 (AGENTS.md 내용 기반, Copilot 표준 위치)
 - 일정별 이메일 알림 켜기/끄기 토글 추가: `schedules.reminder_enabled` 컬럼(마이그레이션 0007) 신설 및 운영 DB에 직접 적용 완료, 일정 생성/수정 모달에 체크박스 추가, 리마인더 크론(`/api/schedule-reminders`)에서 꺼진 일정 제외
   - 참고: 이 프로젝트는 `supabase` CLI로 링크되어 있지 않음(마이그레이션 이력 추적 테이블 없음) — `supabase db push`는 0001부터 재적용을 시도해 실패하니, 새 마이그레이션은 `SUPABASE_DB_URL`로 직접 연결해 해당 SQL만 실행할 것
 - 프로젝트 지침 체계 정리: AGENTS.md에 배경 섹션 추가, TODO.md/PROGRESS.md 신설 (세션 간 작업 인수인계를 위해)
