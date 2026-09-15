@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GoalCard from "@/components/goals/GoalCard";
 import GoalModal from "@/components/goals/GoalModal";
+import RecurringTemplateModal from "@/components/goals/RecurringTemplateModal";
 import CategoryFilter, {
   type CategoryFilterValue,
 } from "@/components/goals/CategoryFilter";
@@ -15,7 +16,10 @@ import {
   type Goal,
   type GoalInput,
 } from "@/hooks/useGoals";
-import { useRecurringTemplates } from "@/hooks/useRecurringTemplates";
+import {
+  useRecurringTemplates,
+  type RecurringTemplate,
+} from "@/hooks/useRecurringTemplates";
 import { useAuth } from "@/hooks/useAuth";
 
 interface StatCardProps {
@@ -49,12 +53,14 @@ export default function GoalsPage() {
     templates,
     isLoaded: templatesLoaded,
     addTemplate,
+    updateTemplate,
     deleteTemplate,
   } = useRecurringTemplates();
 
   const [filter, setFilter] = useState<CategoryFilterValue>("전체");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<RecurringTemplate | null>(null);
 
   // 세션당 1회 spawn: 양쪽 로드 완료 + 로그인 상태일 때 실행
   const spawnedRef = useRef(false);
@@ -127,6 +133,16 @@ export default function GoalsPage() {
     closeModal();
   };
 
+  const handleTemplateSubmit = async (title: string, weekdays: number[]) => {
+    if (!editingTemplate) return;
+    try {
+      await updateTemplate(editingTemplate.id, title, weekdays);
+      setEditingTemplate(null);
+    } catch {
+      alert("수정 중 오류가 발생했습니다.");
+    }
+  };
+
   if (!authLoaded) {
     return (
       <div className="flex flex-1 flex-col bg-white">
@@ -191,6 +207,23 @@ export default function GoalsPage() {
                     className="flex items-center gap-1.5 rounded-full border border-sky-200 bg-white px-3 py-1 text-sm text-zinc-700"
                   >
                     {tpl.title}
+                    <button
+                      type="button"
+                      onClick={() => setEditingTemplate(tpl)}
+                      aria-label="반복 수정"
+                      className="text-zinc-400 hover:text-zinc-700"
+                    >
+                      <svg
+                        width="11"
+                        height="11"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.4"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.3 2.3a1.5 1.5 0 0 1 2.1 2.1l-7.6 7.6-2.6.6.6-2.6 7.5-7.7z" />
+                      </svg>
+                    </button>
                     <button
                       type="button"
                       onClick={() => deleteTemplate(tpl.id)}
@@ -278,6 +311,14 @@ export default function GoalsPage() {
           initialGoal={editingGoal}
           onClose={closeModal}
           onSubmit={handleSubmit}
+        />
+      )}
+
+      {editingTemplate && (
+        <RecurringTemplateModal
+          template={editingTemplate}
+          onClose={() => setEditingTemplate(null)}
+          onSubmit={handleTemplateSubmit}
         />
       )}
     </div>

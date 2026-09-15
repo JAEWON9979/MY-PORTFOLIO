@@ -73,6 +73,21 @@ export function useRecurringTemplates() {
     []
   );
 
+  const updateTemplate = useCallback(
+    async (id: string, title: string, weekdays: number[]) => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("recurring_templates")
+        .update({ title, weekdays })
+        .eq("id", id);
+      if (error) throw error;
+      setTemplates((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, title, weekdays } : t))
+      );
+    },
+    []
+  );
+
   const deleteTemplate = useCallback(async (id: string) => {
     const supabase = createClient();
     const { error } = await supabase
@@ -83,5 +98,5 @@ export function useRecurringTemplates() {
     setTemplates((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  return { templates, isLoaded, addTemplate, deleteTemplate, refresh };
+  return { templates, isLoaded, addTemplate, updateTemplate, deleteTemplate, refresh };
 }

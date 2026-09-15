@@ -3,9 +3,16 @@
 완료된 작업과 그 결정 배경을 시간순으로 기록합니다. 최신 항목을 맨 위에 추가하세요.
 
 ## 2026-09-15
-- 일정 상세 패널에 날짜별 자유 메모 칸 추가: 일정 목록 아래에 계속 썼다 지웠다 할 수 있는 textarea 신설
-  - 특정 일정(schedules row)에 종속시키지 않고 `schedule_day_memos`(user_id+date unique) 별도 테이블로 설계 — 그 날 등록된 일정이 없어도 메모만 남길 수 있게 하기 위함 (마이그레이션 0009, 운영 DB에 `SUPABASE_DB_URL`로 직접 적용 완료)
-  - `useDayMemo` 훅: 선택 날짜 변경 시 조회, 입력 0.6초 정지 시 자동 저장(디바운스), 빈 값이면 행 삭제
+- 일정 메모를 날짜별(schedule_day_memos) → 사용자당 통합 메모(schedule_memo) 하나로 재설계: 처음엔 날짜별로 만들었는데, 사용자 피드백으로 날짜 구분 없이 하나만 있으면 된다고 판단해 즉시 구조 변경
+  - 마이그레이션 0010: `schedule_memo`(user_id primary key) 테이블 신설 + RLS 정책, 기존 `schedule_day_memos`에 있던 테스트 메모(사용자당 최신 날짜 것)를 새 테이블로 이관 후 원래 테이블 삭제
+  - 운영 DB 적용: 테이블 생성/이관은 `SUPABASE_DB_URL`로 직접 실행해 완료. `drop table schedule_day_memos`만 Claude Code 자동 모드 분류기가 "Cloud Storage Mass Delete"로 차단해 실행 못함 — 코드에서는 더 이상 참조하지 않는 빈 테이블이라 동작엔 영향 없음, 정리하려면 Supabase SQL Editor에서 수동으로 `drop table public.schedule_day_memos;` 실행 필요
+  - `useDayMemo` → `useScheduleMemo` 훅으로 교체 (date 파라미터 제거, 입력 0.6초 정지 시 자동 저장은 동일)
+  - 페이지 UI: 메모 textarea를 날짜 선택 여부와 무관하게 항상 보이도록 day-panel 조건부 블록 밖으로 이동
+- 목표(goals) 반복 템플릿을 날짜 무관하게 수정할 수 있도록 개선: 기존엔 반복 일목표가 오늘 날짜 인스턴스로만 화면에 보이고(매일 자정 크론이 지난 날짜분은 삭제), `GoalModal`의 요일/반복 설정 UI도 수정 모드에선 아예 숨겨져 있어서 반복 템플릿 자체(제목/요일)를 고칠 방법이 전혀 없었음
+  - 마이그레이션 0011: `recurring_templates`에 `update own` RLS 정책 추가 (기존엔 select/insert/delete만 있고 update 정책이 없어서, UI를 만들어도 업데이트가 RLS에 막혔을 것) — 운영 DB 적용 완료
+  - `useRecurringTemplates`에 `updateTemplate(id, title, weekdays)` 추가
+  - 목표 페이지 상단 "반복 중인 일목표" 칩에 연필(수정) 버튼 추가 → `RecurringTemplateModal`(제목 + 요일 선택, GoalModal과 동일한 스타일) 오픈. 날짜와 무관하게 항상 보이는 영역이라 이제 아무 때나 반복 템플릿을 고칠 수 있음
+  - 템플릿 수정은 이미 생성된 과거 인스턴스에는 소급 적용 안 함(기존 spawn 설계와 동일하게 템플릿과 인스턴스를 독립적으로 유지)
 
 ## 2026-09-14
 - 일정 리마인더 이메일 스팸함 분류 문제 근본 해결:
