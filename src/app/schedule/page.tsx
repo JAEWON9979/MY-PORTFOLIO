@@ -12,6 +12,7 @@ import {
   type ScheduleInput,
   type RecurrenceInput,
 } from "@/hooks/useSchedules";
+import { useDayMemo } from "@/hooks/useDayMemo";
 import { useAuth } from "@/hooks/useAuth";
 
 // ── calendar helpers ──────────────────────────────────────────────────────────
@@ -77,6 +78,7 @@ export default function SchedulePage() {
   } = useSchedules(year, month);
   const [modal, setModal] = useState<ModalMode | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
+  const { memo, updateMemo } = useDayMemo(selectedDate);
 
   const calendarDays = useMemo(() => buildCalendarDays(year, month), [year, month]);
 
@@ -392,6 +394,18 @@ export default function SchedulePage() {
                       ))}
                     </ul>
                   )}
+
+                  {/* Simple memo */}
+                  <div className="mt-4 border-t border-zinc-100 pt-4">
+                    <p className="mb-1.5 text-xs font-medium text-zinc-500">메모</p>
+                    <textarea
+                      value={memo}
+                      onChange={(e) => updateMemo(e.target.value)}
+                      placeholder="간단한 메모를 남겨보세요"
+                      rows={3}
+                      className="w-full resize-none rounded-lg border border-zinc-200 p-2 text-sm text-zinc-700 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none"
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center justify-center rounded-2xl border border-dashed border-zinc-200 px-6 py-12 text-sm text-zinc-400">
