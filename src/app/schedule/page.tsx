@@ -402,7 +402,7 @@ export default function SchedulePage() {
                       value={memo}
                       onChange={(e) => updateMemo(e.target.value)}
                       placeholder="간단한 메모를 남겨보세요"
-                      rows={3}
+                      rows={5}
                       className="w-full resize-none rounded-lg border border-zinc-200 p-2 text-sm text-zinc-700 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none"
                     />
                   </div>
