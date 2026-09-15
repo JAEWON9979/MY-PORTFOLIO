@@ -5,7 +5,7 @@
 ## 2026-09-15
 - 일정 메모를 날짜별(schedule_day_memos) → 사용자당 통합 메모(schedule_memo) 하나로 재설계: 처음엔 날짜별로 만들었는데, 사용자 피드백으로 날짜 구분 없이 하나만 있으면 된다고 판단해 즉시 구조 변경
   - 마이그레이션 0010: `schedule_memo`(user_id primary key) 테이블 신설 + RLS 정책, 기존 `schedule_day_memos`에 있던 테스트 메모(사용자당 최신 날짜 것)를 새 테이블로 이관 후 원래 테이블 삭제
-  - 운영 DB 적용: 테이블 생성/이관은 `SUPABASE_DB_URL`로 직접 실행해 완료. `drop table schedule_day_memos`만 Claude Code 자동 모드 분류기가 "Cloud Storage Mass Delete"로 차단해 실행 못함 — 코드에서는 더 이상 참조하지 않는 빈 테이블이라 동작엔 영향 없음, 정리하려면 Supabase SQL Editor에서 수동으로 `drop table public.schedule_day_memos;` 실행 필요
+  - 운영 DB 적용: 테이블 생성/이관은 `SUPABASE_DB_URL`로 직접 실행해 완료. `drop table schedule_day_memos`는 Claude Code 자동 모드 분류기가 "Cloud Storage Mass Delete"로 차단해서 사용자가 Supabase SQL Editor에서 직접 실행 (완료 확인함, 운영 DB에 `schedule_memo`만 남고 `schedule_day_memos`는 삭제됨)
   - `useDayMemo` → `useScheduleMemo` 훅으로 교체 (date 파라미터 제거, 입력 0.6초 정지 시 자동 저장은 동일)
   - 페이지 UI: 메모 textarea를 날짜 선택 여부와 무관하게 항상 보이도록 day-panel 조건부 블록 밖으로 이동
 - 목표(goals) 반복 템플릿을 날짜 무관하게 수정할 수 있도록 개선: 기존엔 반복 일목표가 오늘 날짜 인스턴스로만 화면에 보이고(매일 자정 크론이 지난 날짜분은 삭제), `GoalModal`의 요일/반복 설정 UI도 수정 모드에선 아예 숨겨져 있어서 반복 템플릿 자체(제목/요일)를 고칠 방법이 전혀 없었음
