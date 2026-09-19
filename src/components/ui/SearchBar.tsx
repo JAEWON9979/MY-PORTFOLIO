@@ -29,6 +29,7 @@ export default function SearchBar({
 
       <input
         type="text"
+        spellCheck={false}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}

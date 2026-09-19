@@ -326,6 +326,7 @@ export default function CommunityPostPage() {
                     </label>
                     <input
                       type="text"
+                      spellCheck={false}
                       value={editTitle}
                       onChange={(event) => setEditTitle(event.target.value)}
                       required
@@ -338,6 +339,7 @@ export default function CommunityPostPage() {
                       내용
                     </label>
                     <textarea
+                      spellCheck={false}
                       value={editContent}
                       onChange={(event) => setEditContent(event.target.value)}
                       required
@@ -620,6 +622,7 @@ export default function CommunityPostPage() {
                 {user ? (
                   <form onSubmit={handleAddComment} className="mt-4 space-y-2">
                     <textarea
+                      spellCheck={false}
                       value={commentContent}
                       onChange={(event) =>
                         setCommentContent(event.target.value)

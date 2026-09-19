@@ -129,6 +129,7 @@ function CourseModal({ initialCourse, onClose, onSubmit }: CourseModalProps) {
             <label className="mb-1 block text-sm font-medium text-zinc-700">과목명</label>
             <input
               type="text"
+              spellCheck={false}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required

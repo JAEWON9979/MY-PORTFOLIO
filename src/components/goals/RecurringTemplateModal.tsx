@@ -59,6 +59,7 @@ export default function RecurringTemplateModal({
             <label className="mb-1 block text-sm font-medium text-zinc-700">제목</label>
             <input
               type="text"
+              spellCheck={false}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required

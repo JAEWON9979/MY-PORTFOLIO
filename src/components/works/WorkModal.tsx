@@ -317,6 +317,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
             </label>
             <input
               type="text"
+              spellCheck={false}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -349,6 +350,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
               설명
             </label>
             <textarea
+              spellCheck={false}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
@@ -364,6 +366,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
             </label>
             <input
               type="text"
+              spellCheck={false}
               value={techTagsText}
               onChange={(e) => setTechTagsText(e.target.value)}
               placeholder="Python, Pandas"

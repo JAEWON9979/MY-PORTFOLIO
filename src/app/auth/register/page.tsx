@@ -43,6 +43,7 @@ export default function RegisterPage() {
               </label>
               <input
                 type="text"
+                spellCheck={false}
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
                 required

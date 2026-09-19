@@ -222,6 +222,7 @@ export default function CommunityWritePage() {
               </label>
               <input
                 type="text"
+                spellCheck={false}
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 required
@@ -234,6 +235,7 @@ export default function CommunityWritePage() {
                 내용
               </label>
               <textarea
+                spellCheck={false}
                 value={content}
                 onChange={(event) => setContent(event.target.value)}
                 required
