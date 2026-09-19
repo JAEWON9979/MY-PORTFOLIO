@@ -113,6 +113,7 @@ export default function ScheduleModal({
               onChange={(e) => setTitle(e.target.value)}
               required
               maxLength={100}
+              spellCheck={false}
               className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
             />
           </div>
@@ -126,6 +127,7 @@ export default function ScheduleModal({
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               maxLength={500}
+              spellCheck={false}
               className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
             />
           </div>
