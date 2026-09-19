@@ -21,7 +21,7 @@ import {
   type RecurringTemplate,
 } from "@/hooks/useRecurringTemplates";
 import { useAuth } from "@/hooks/useAuth";
-import { kstToday } from "@/lib/date";
+import { daysBetween, formatMonthDayWeekday, kstToday } from "@/lib/date";
 
 interface StatCardProps {
   label: string;
@@ -62,6 +62,7 @@ export default function GoalsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [editingTemplate, setEditingTemplate] = useState<RecurringTemplate | null>(null);
+  const [showUpcoming, setShowUpcoming] = useState(false);
 
   // 세션당 1회 spawn: 양쪽 로드 완료 + 로그인 상태일 때 실행
   const spawnedRef = useRef(false);
@@ -105,6 +106,23 @@ export default function GoalsPage() {
     if (filter === "전체") return visible;
     return visible.filter((g) => g.category === filter);
   }, [goals, filter, today]);
+
+  // 예정된 일목표: 마감일이 오늘 이후인 일목표를 날짜별로 묶는다 (통계에는 포함하지 않음)
+  const upcomingGroups = useMemo(() => {
+    const upcoming = goals
+      .filter((g) => g.category === "일목표" && g.deadline > today)
+      .sort((a, b) => a.deadline.localeCompare(b.deadline));
+    const groups: { date: string; goals: Goal[] }[] = [];
+    for (const goal of upcoming) {
+      const last = groups[groups.length - 1];
+      if (last && last.date === goal.deadline) last.goals.push(goal);
+      else groups.push({ date: goal.deadline, goals: [goal] });
+    }
+    return groups;
+  }, [goals, today]);
+  const upcomingCount = upcomingGroups.reduce((n, g) => n + g.goals.length, 0);
+  const showUpcomingSection =
+    upcomingCount > 0 && (filter === "전체" || filter === "일목표");
 
   const openAddModal = () => {
     setEditingGoal(null);
@@ -285,7 +303,9 @@ export default function GoalsPage() {
           {/* 목표 목록 */}
           {goalsLoaded && filteredGoals.length === 0 ? (
             <p className="text-sm text-zinc-500">
-              아직 등록된 목표가 없습니다. 목표를 추가해보세요.
+              {showUpcomingSection
+                ? "오늘 표시할 목표가 없습니다."
+                : "아직 등록된 목표가 없습니다. 목표를 추가해보세요."}
             </p>
           ) : (
             <div className="flex flex-col gap-2">
@@ -301,6 +321,62 @@ export default function GoalsPage() {
                   onDelete={() => deleteGoal(goal.id)}
                 />
               ))}
+            </div>
+          )}
+
+          {/* 예정된 일목표 (접이식) */}
+          {goalsLoaded && showUpcomingSection && (
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => setShowUpcoming((v) => !v)}
+                aria-expanded={showUpcoming}
+                className="flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-800"
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  className={`transition-transform ${showUpcoming ? "rotate-90" : ""}`}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 2l4 4-4 4" />
+                </svg>
+                예정된 일목표 {upcomingCount}개
+              </button>
+
+              {showUpcoming && (
+                <div className="mt-3 flex flex-col gap-4">
+                  {upcomingGroups.map((group) => {
+                    const diff = daysBetween(group.date, today);
+                    const dateLabel = formatMonthDayWeekday(group.date);
+                    return (
+                      <div key={group.date}>
+                        <p className="mb-1.5 text-xs font-semibold text-zinc-400">
+                          {diff === 1 ? `내일 · ${dateLabel}` : dateLabel}
+                        </p>
+                        <div className="flex flex-col gap-2">
+                          {group.goals.map((goal) => (
+                            <GoalCard
+                              key={goal.id}
+                              goal={goal}
+                              upcomingLabel={diff === 1 ? "내일" : `D-${diff}`}
+                              onToggle={() => toggleComplete(goal.id)}
+                              onEdit={() => {
+                                setEditingGoal(goal);
+                                setIsModalOpen(true);
+                              }}
+                              onDelete={() => deleteGoal(goal.id)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </section>

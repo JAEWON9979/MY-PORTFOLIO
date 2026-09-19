@@ -7,6 +7,8 @@ interface GoalRowProps {
   onToggle: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  /** 예정된 일목표(마감일이 오늘 이후)일 때 마감일 대신 보여줄 라벨. 지정하면 흐린 스타일 + 체크 비활성 */
+  upcomingLabel?: string;
 }
 
 const categoryStyles: Record<Goal["category"], string> = {
@@ -15,18 +17,34 @@ const categoryStyles: Record<Goal["category"], string> = {
   연목표: "bg-amber-50 text-amber-700",
 };
 
-export default function GoalCard({ goal, onToggle, onEdit, onDelete }: GoalRowProps) {
+export default function GoalCard({
+  goal,
+  onToggle,
+  onEdit,
+  onDelete,
+  upcomingLabel,
+}: GoalRowProps) {
+  const isUpcoming = upcomingLabel !== undefined;
+
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3 transition-shadow hover:shadow-sm">
+    <div
+      className={`flex items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 transition-shadow hover:shadow-sm ${
+        isUpcoming ? "bg-zinc-50" : "bg-white"
+      }`}
+    >
       {/* Toggle circle */}
       <button
         type="button"
         onClick={onToggle}
+        disabled={isUpcoming}
         aria-label={goal.isCompleted ? "미달성으로 변경" : "달성으로 변경"}
+        title={isUpcoming ? "예정된 목표는 그날이 되면 체크할 수 있어요" : undefined}
         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
           goal.isCompleted
             ? "border-zinc-900 bg-zinc-900 text-white"
-            : "border-zinc-300 hover:border-zinc-600"
+            : isUpcoming
+              ? "cursor-not-allowed border-dashed border-zinc-300"
+              : "border-zinc-300 hover:border-zinc-600"
         }`}
       >
         {goal.isCompleted && (
@@ -46,7 +64,11 @@ export default function GoalCard({ goal, onToggle, onEdit, onDelete }: GoalRowPr
       {/* Title */}
       <p
         className={`flex-1 truncate text-sm font-medium ${
-          goal.isCompleted ? "text-zinc-400 line-through" : "text-zinc-900"
+          goal.isCompleted
+            ? "text-zinc-400 line-through"
+            : isUpcoming
+              ? "text-zinc-600"
+              : "text-zinc-900"
         }`}
       >
         {goal.title}
@@ -64,7 +86,9 @@ export default function GoalCard({ goal, onToggle, onEdit, onDelete }: GoalRowPr
             반복
           </span>
         )}
-        <span className="text-xs text-zinc-400">~{goal.deadline}</span>
+        <span className="text-xs text-zinc-400">
+          {isUpcoming ? upcomingLabel : `~${goal.deadline}`}
+        </span>
       </div>
 
       {/* Status pill */}
@@ -75,7 +99,7 @@ export default function GoalCard({ goal, onToggle, onEdit, onDelete }: GoalRowPr
             : "bg-zinc-100 text-zinc-500"
         }`}
       >
-        {goal.isCompleted ? "달성" : "미달성"}
+        {goal.isCompleted ? "달성" : isUpcoming ? "예정" : "미달성"}
       </span>
 
       {/* Actions */}
