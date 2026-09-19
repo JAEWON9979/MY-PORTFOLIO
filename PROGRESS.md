@@ -2,6 +2,13 @@
 
 완료된 작업과 그 결정 배경을 시간순으로 기록합니다. 최신 항목을 맨 위에 추가하세요.
 
+## 2026-09-20
+- 일정 페이지 메모 입력창의 브라우저 맞춤법 검사(빨간 밑줄) 비활성화: 메모는 자유 형식이라 오타 표시가 방해가 되어 `spellCheck={false}` 적용 (`src/app/schedule/page.tsx`). 일정/목표 모달의 설명 입력창 등 다른 textarea는 요청 범위 밖이라 그대로 둠
+- `npm run lint`가 빌드 산출물(`.next/`)과 `next-env.d.ts`까지 검사해 오류 1007건/경고 7000여 건이 나오던 문제 해결: `eslint.config.mjs`에 `ignores: [".next/**", "next-env.d.ts"]` 추가. `src/`에는 원래 오류가 없었고, 이제 `npm run lint`가 잡음 없이 통과하므로 변경 후 검증 수단으로 실제로 쓸 수 있음
+
+- 일정 추가/수정 모달이 텍스트 드래그 선택 중 실수로 닫히던 버그 수정 (`ScheduleModal.tsx`): 입력칸에서 mousedown → 모달 밖(배경)에서 mouseup 하면 click 이벤트 대상이 공통 조상인 배경 오버레이가 되어 `onClose`가 실행되던 게 원인. 배경에서 mousedown이 시작됐는지 `useRef`로 추적해 배경에서 시작+끝난 클릭일 때만 닫히게 변경. 대상 체크(`e.target === e.currentTarget`)로 충분해져 안쪽 박스의 `stopPropagation`은 제거. 같은 패턴이 GoalModal/RecurringTemplateModal/WorkModal에도 있어 TODO에 남김
+- 같은 버그를 나머지 입력칸 있는 모달에도 적용: 공용 훅 `src/hooks/useBackdropClose.ts`(mousedown이 배경에서 시작한 클릭일 때만 닫힘)를 만들어 ScheduleModal(위 임시 로직을 훅으로 교체)·GoalModal·RecurringTemplateModal·WorkModal·성적 페이지 CourseModal에 적용. 성적 CourseModal은 `target === currentTarget` 검사만 있어 여전히 같은 증상이 있었음. 입력칸이 없는 탈퇴 확인 모달(account)·DeleteConfirmDialog는 드래그 선택 상황이 없어 그대로 둠
+
 ## 2026-09-15
 - 일정 메모를 날짜별(schedule_day_memos) → 사용자당 통합 메모(schedule_memo) 하나로 재설계: 처음엔 날짜별로 만들었는데, 사용자 피드백으로 날짜 구분 없이 하나만 있으면 된다고 판단해 즉시 구조 변경
   - 마이그레이션 0010: `schedule_memo`(user_id primary key) 테이블 신설 + RLS 정책, 기존 `schedule_day_memos`에 있던 테스트 메모(사용자당 최신 날짜 것)를 새 테이블로 이관 후 원래 테이블 삭제
