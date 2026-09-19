@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { kstToday } from "@/lib/date";
 
 export type GoalCategory = "일목표" | "주목표" | "연목표";
 
@@ -53,7 +54,7 @@ export async function spawnTodayInstances(
 ): Promise<Goal[]> {
   if (!templates.length || !userId) return [];
   const supabase = createClient();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = kstToday();
   const [ty, tm, td] = today.split("-").map(Number);
   const todayWeekday = new Date(ty, tm - 1, td).getDay();
   templates = templates.filter((tpl) => tpl.weekdays.includes(todayWeekday));

@@ -21,6 +21,7 @@ import {
   type RecurringTemplate,
 } from "@/hooks/useRecurringTemplates";
 import { useAuth } from "@/hooks/useAuth";
+import { kstToday } from "@/lib/date";
 
 interface StatCardProps {
   label: string;
@@ -72,7 +73,7 @@ export default function GoalsPage() {
       .catch(() => {});
   }, [user, goalsLoaded, templatesLoaded, templates, refreshGoals]);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = kstToday();
 
   // 통계: 일목표는 오늘 날짜만 카운트
   const stats = useMemo(() => {
