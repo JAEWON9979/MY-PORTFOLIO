@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Goal, GoalCategory, GoalInput } from "@/hooks/useGoals";
+import { useBackdropClose } from "@/hooks/useBackdropClose";
 
 const categoryOptions: GoalCategory[] = ["일목표", "주목표", "연목표"];
 const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -25,6 +26,7 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
   const [isRecurring, setIsRecurring] = useState(false); // 새 목표 추가 시에만
   const [weekdays, setWeekdays] = useState<number[]>(ALL_WEEKDAYS);
   const [weekdayError, setWeekdayError] = useState("");
+  const backdropProps = useBackdropClose(onClose);
 
   const toggleWeekday = (day: number) => {
     setWeekdays((prev) =>
@@ -64,12 +66,9 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-      onClick={onClose}
+      {...backdropProps}
     >
-      <div
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
         <h2 className="mb-4 text-lg font-bold text-zinc-900">
           {isEdit ? "목표 수정" : "목표 추가"}
         </h2>

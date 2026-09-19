@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { RecurringTemplate } from "@/hooks/useRecurringTemplates";
+import { useBackdropClose } from "@/hooks/useBackdropClose";
 
 const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -19,6 +20,7 @@ export default function RecurringTemplateModal({
   const [title, setTitle] = useState(template.title);
   const [weekdays, setWeekdays] = useState<number[]>(template.weekdays);
   const [weekdayError, setWeekdayError] = useState("");
+  const backdropProps = useBackdropClose(onClose);
 
   const toggleWeekday = (day: number) => {
     setWeekdays((prev) =>
@@ -48,12 +50,9 @@ export default function RecurringTemplateModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-      onClick={onClose}
+      {...backdropProps}
     >
-      <div
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
         <h2 className="mb-4 text-lg font-bold text-zinc-900">반복 목표 수정</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

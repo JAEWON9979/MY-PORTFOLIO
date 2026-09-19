@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Schedule, ScheduleInput, RecurrenceInput } from "@/hooks/useSchedules";
+import { useBackdropClose } from "@/hooks/useBackdropClose";
 
 interface ScheduleModalProps {
   initialDate: string;
@@ -32,6 +33,7 @@ export default function ScheduleModal({
   const [weekdays, setWeekdays] = useState<number[]>([]);
   const [endDate, setEndDate] = useState("");
   const [recurrenceError, setRecurrenceError] = useState("");
+  const backdropProps = useBackdropClose(onClose);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -80,12 +82,9 @@ export default function ScheduleModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-      onClick={onClose}
+      {...backdropProps}
     >
-      <div
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
         <h2 className="mb-4 text-lg font-bold text-zinc-900">
           {initialSchedule ? "일정 수정" : "일정 추가"}
         </h2>

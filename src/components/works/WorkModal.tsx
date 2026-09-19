@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Work, WorkCategory, WorkFileType, WorkInput } from "@/hooks/useWorks";
+import { useBackdropClose } from "@/hooks/useBackdropClose";
 
 const categoryOptions: WorkCategory[] = ["수업과제", "개인실습", "팀프로젝트"];
 
@@ -42,6 +43,7 @@ function getFileTypeFromName(filename: string): WorkFileType {
 }
 
 export default function WorkModal({ initialWork, onClose, onSubmit, submitError }: WorkModalProps) {
+  const backdropProps = useBackdropClose(onClose);
   const [title, setTitle] = useState(initialWork?.title ?? "");
   const [category, setCategory] = useState<WorkCategory>(
     initialWork?.category ?? "수업과제"
@@ -300,12 +302,9 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-      onClick={onClose}
+      {...backdropProps}
     >
-      <div
-        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
         <h2 className="mb-4 text-lg font-bold text-zinc-900">
           {initialWork ? "작업물 수정" : "작업물 추가"}
         </h2>

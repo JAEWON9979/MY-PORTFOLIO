@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
+import { useBackdropClose } from "@/hooks/useBackdropClose";
 import {
   useCourses,
   calcGPA,
@@ -64,6 +65,7 @@ function CourseModal({ initialCourse, onClose, onSubmit }: CourseModalProps) {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const backdropProps = useBackdropClose(onClose);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +90,7 @@ function CourseModal({ initialCourse, onClose, onSubmit }: CourseModalProps) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      {...backdropProps}
     >
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
         <h2 className="mb-5 text-lg font-bold text-zinc-900">
