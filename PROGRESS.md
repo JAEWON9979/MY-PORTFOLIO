@@ -5,11 +5,10 @@
 ## 2026-09-20
 - 목표 페이지에 "예정된 일목표" 접이식 섹션 추가: 미래 날짜로 만든 일목표는 그날이 되기 전엔 목록에 안 보여 등록 여부를 확인할 방법이 없었음. 오늘 목록 아래에 개수만 보이는 접힌 섹션(0개면 숨김, 필터가 전체/일목표일 때만)으로 두고, 펼치면 날짜별로 묶어 "내일 · 9/21(월)" / D-n 라벨로 표시. 오늘 화면의 주인공은 오늘 할 일이라 기본은 접힘. 통계는 오늘 기준 그대로라 미리 달성 체크는 비활성(수정·삭제는 허용 — 날짜를 앞당기려면 수정 필요). 반복 일목표는 미래 인스턴스가 생성되지 않는 구조라 이 섹션에 안 나오고 기존 "반복 중인 일목표" 카드가 담당. `GoalCard`에 `upcomingLabel` prop, `src/lib/date.ts`에 `daysBetween`/`formatMonthDayWeekday` 추가
 - 일목표가 KST 기준 00:00~24:00 동안 보이도록 수정: 목표 화면의 "오늘"과 반복 목표 인스턴스 생성(`spawnTodayInstances`)이 `new Date().toISOString()`(UTC)을 써서 한국 시간 00:00~09:00엔 어제 날짜로 계산됐고, 그 결과 일목표가 09:00~다음 날 03:00(정리 크론이 삭제)까지만 보였음. 공용 헬퍼 `src/lib/date.ts`의 `kstToday()`로 교체. 정리 크론(KST 03:00)은 마감일이 지난 것만 지우므로 그대로 둠. 일목표는 마감일이 오늘인 것만 보이는 기존 동작(미래 날짜로 만들면 그날이 되어야 보임)은 유지
-- 일정 페이지 메모 입력창의 브라우저 맞춤법 검사(빨간 밑줄) 비활성화: 메모는 자유 형식이라 오타 표시가 방해가 되어 `spellCheck={false}` 적용 (`src/app/schedule/page.tsx`). 일정/목표 모달의 설명 입력창 등 다른 textarea는 요청 범위 밖이라 그대로 둠
+- 같은 버그를 나머지 입력칸 있는 모달에도 적용: 공용 훅 `src/hooks/useBackdropClose.ts`(mousedown이 배경에서 시작한 클릭일 때만 닫힘)를 만들어 ScheduleModal(아래 임시 로직을 훅으로 교체)·GoalModal·RecurringTemplateModal·WorkModal·성적 페이지 CourseModal에 적용. 성적 CourseModal은 `target === currentTarget` 검사만 있어 여전히 같은 증상이 있었음. 입력칸이 없는 탈퇴 확인 모달(account)·DeleteConfirmDialog는 드래그 선택 상황이 없어 그대로 둠
+- 일정 추가/수정 모달이 텍스트 드래그 선택 중 실수로 닫히던 버그 수정 (`ScheduleModal.tsx`): 입력칸에서 mousedown → 모달 밖(배경)에서 mouseup 하면 click 이벤트 대상이 공통 조상인 배경 오버레이가 되어 `onClose`가 실행되던 게 원인. 배경에서 mousedown이 시작됐는지 `useRef`로 추적해 배경에서 시작+끝난 클릭일 때만 닫히게 변경. 대상 체크(`e.target === e.currentTarget`)로 충분해져 안쪽 박스의 `stopPropagation`은 제거
 - `npm run lint`가 빌드 산출물(`.next/`)과 `next-env.d.ts`까지 검사해 오류 1007건/경고 7000여 건이 나오던 문제 해결: `eslint.config.mjs`에 `ignores: [".next/**", "next-env.d.ts"]` 추가. `src/`에는 원래 오류가 없었고, 이제 `npm run lint`가 잡음 없이 통과하므로 변경 후 검증 수단으로 실제로 쓸 수 있음
-
-- 일정 추가/수정 모달이 텍스트 드래그 선택 중 실수로 닫히던 버그 수정 (`ScheduleModal.tsx`): 입력칸에서 mousedown → 모달 밖(배경)에서 mouseup 하면 click 이벤트 대상이 공통 조상인 배경 오버레이가 되어 `onClose`가 실행되던 게 원인. 배경에서 mousedown이 시작됐는지 `useRef`로 추적해 배경에서 시작+끝난 클릭일 때만 닫히게 변경. 대상 체크(`e.target === e.currentTarget`)로 충분해져 안쪽 박스의 `stopPropagation`은 제거. 같은 패턴이 GoalModal/RecurringTemplateModal/WorkModal에도 있어 TODO에 남김
-- 같은 버그를 나머지 입력칸 있는 모달에도 적용: 공용 훅 `src/hooks/useBackdropClose.ts`(mousedown이 배경에서 시작한 클릭일 때만 닫힘)를 만들어 ScheduleModal(위 임시 로직을 훅으로 교체)·GoalModal·RecurringTemplateModal·WorkModal·성적 페이지 CourseModal에 적용. 성적 CourseModal은 `target === currentTarget` 검사만 있어 여전히 같은 증상이 있었음. 입력칸이 없는 탈퇴 확인 모달(account)·DeleteConfirmDialog는 드래그 선택 상황이 없어 그대로 둠
+- 일정 페이지 메모 입력창의 브라우저 맞춤법 검사(빨간 밑줄) 비활성화: 메모는 자유 형식이라 오타 표시가 방해가 되어 `spellCheck={false}` 적용 (`src/app/schedule/page.tsx`). 일정/목표 모달의 설명 입력창 등 다른 textarea는 요청 범위 밖이라 그대로 둠
 
 ## 2026-09-15
 - 일정 메모를 날짜별(schedule_day_memos) → 사용자당 통합 메모(schedule_memo) 하나로 재설계: 처음엔 날짜별로 만들었는데, 사용자 피드백으로 날짜 구분 없이 하나만 있으면 된다고 판단해 즉시 구조 변경
