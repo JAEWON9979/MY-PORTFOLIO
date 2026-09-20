@@ -187,10 +187,9 @@ export function usePosts() {
       const target = posts.find((post) => post.id === id);
       if (!target) return;
       const supabase = createClient();
-      const { error } = await supabase
-        .from("posts")
-        .update({ view_count: target.viewCount + 1 })
-        .eq("id", id);
+      const { error } = await supabase.rpc("increment_post_view", {
+        _post_id: id,
+      });
       if (error) return;
       setPosts((prev) =>
         prev.map((post) =>
@@ -206,10 +205,9 @@ export function usePosts() {
       const target = posts.find((post) => post.id === id);
       if (!target) return;
       const supabase = createClient();
-      const { error } = await supabase
-        .from("posts")
-        .update({ like_count: target.likeCount + 1 })
-        .eq("id", id);
+      const { error } = await supabase.rpc("increment_post_like", {
+        _post_id: id,
+      });
       if (error) return;
       setPosts((prev) =>
         prev.map((post) =>

@@ -15,7 +15,8 @@ function kstTodayString(): string {
 // 지난 일목표는 DB에 쌓아둘 필요 없이 정리한다. 주목표/연목표는 대상에서 제외.
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
