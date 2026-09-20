@@ -47,7 +47,7 @@ function CurledCorner() {
       viewBox="0 0 471 442"
       aria-hidden="true"
       className="pointer-events-none absolute bottom-0 right-0 overflow-visible"
-      style={{ width: "clamp(150px, 31vw, 430px)", aspectRatio: "471 / 442" }}
+      style={{ width: "clamp(120px, 19vw, 260px)", aspectRatio: "471 / 442" }}
     >
       <defs>
         {/* 접혀 올라온 뒷면: 안쪽 윤곽 쪽은 밝고 접히는 선 쪽이 살짝 어두움 */}
@@ -58,8 +58,8 @@ function CurledCorner() {
         </linearGradient>
         {/* 벗겨져 드러난 자리: 접히는 선 가까이가 짙고 모서리 쪽으로 옅어짐 */}
         <linearGradient id="curl-revealed" x1="300" y1="250" x2="471" y2="442" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#000000" stopOpacity="0.13" />
-          <stop offset="1" stopColor="#000000" stopOpacity="0.04" />
+          <stop offset="0" stopColor="#000000" stopOpacity="0.09" />
+          <stop offset="1" stopColor="#000000" stopOpacity="0.025" />
         </linearGradient>
         <clipPath id="curl-revealed-clip">
           <path d={CURL_REVEALED} />
@@ -71,21 +71,23 @@ function CurledCorner() {
           <feGaussianBlur stdDeviation="9" />
         </filter>
       </defs>
-      {/* 벗겨져 드러난 자리 + 접힌 종이가 드리우는 그림자 */}
-      <path d={CURL_REVEALED} fill="url(#curl-revealed)" />
-      <g clipPath="url(#curl-revealed-clip)">
-        <path d={CURL_FOLD} fill="none" stroke="#000000" strokeOpacity="0.16" strokeWidth="30" filter="url(#curl-blur)" />
+      <g transform="matrix(1 0 0 0.82 0 79.6)">
+        {/* 벗겨져 드러난 자리 + 접힌 종이가 드리우는 그림자 */}
+        <path d={CURL_REVEALED} fill="url(#curl-revealed)" />
+        <g clipPath="url(#curl-revealed-clip)">
+          <path d={CURL_FOLD} fill="none" stroke="#000000" strokeOpacity="0.12" strokeWidth="30" filter="url(#curl-blur)" />
+        </g>
+        {/* 표지 앞면 아래쪽에 깔리는 옅은 그림자 */}
+        <ellipse cx="120" cy="480" rx="230" ry="70" fill="#000000" fillOpacity="0.05" filter="url(#curl-blur)" />
+        {/* 접혀 올라온 뒷면이 표지 앞면에 드리우는 그림자 */}
+        <g clipPath="url(#curl-outside-clip)">
+          <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.11" strokeWidth="16" filter="url(#curl-blur)" />
+        </g>
+        {/* 접혀 올라온 뒷면 */}
+        <path d={CURL_FLAP} fill="url(#curl-back)" />
+        {/* 안쪽 윤곽선 */}
+        <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.12" strokeWidth="1.4" />
       </g>
-      {/* 표지 앞면 아래쪽에 깔리는 옅은 그림자 */}
-      <ellipse cx="120" cy="480" rx="230" ry="70" fill="#000000" fillOpacity="0.07" filter="url(#curl-blur)" />
-      {/* 접혀 올라온 뒷면이 표지 앞면에 드리우는 그림자 */}
-      <g clipPath="url(#curl-outside-clip)">
-        <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.16" strokeWidth="16" filter="url(#curl-blur)" />
-      </g>
-      {/* 접혀 올라온 뒷면 */}
-      <path d={CURL_FLAP} fill="url(#curl-back)" />
-      {/* 안쪽 윤곽선 */}
-      <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.15" strokeWidth="1.2" />
     </svg>
   );
 }
