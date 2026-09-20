@@ -2,12 +2,11 @@
 
 앞으로 할 일 백로그. 우선순위 순으로 정리하고, 완료하면 항목을 지운 뒤 PROGRESS.md에 기록하세요.
 
-- [보안·낮음] `handle_new_user` 트리거(`0001_init.sql:47`)가 이메일이 `admin@naver.com`이면 관리자로 승격함 → Supabase 이메일 인증이 꺼져 있고 그 주소가 비어 있으면 누구든 관리자로 가입 가능. Supabase Auth 설정에서 이메일 인증(Confirm email) 여부 확인
-- [보안·낮음] username은 가입 시 자유 입력이라 중복·예약어("운영자", 다른 회원 이름) 방지가 없음 → 필요하면 `profiles.username` 유일 인덱스 + 회원가입 오류 안내가 필요(기존 중복 데이터 확인 후). 0015로 글별 이름 사칭은 막지만 가입 때 정한 이름 자체는 못 막음
+- [보안·낮음~중간] Supabase **Confirm email이 꺼져 있음**(공개 `auth/v1/settings`의 `mailer_autoconfirm=true`, 2026-09-20 확인, 대시보드 Email 패널에선 토글이 안 보였음): 가입 시 이메일 소유 확인이 없어, 남의 이메일로 가입한 뒤 일정 리마인더를 켜면 크론이 `jay@jaewon.homes` 발신으로 그 주소에 메일을 보내게 할 수 있음(발신 평판 위험, 계정 하나당 소량). 관리자 자동 승격은 0016으로 제거해 그 경로는 이미 막힘. 켤지 사용자 결정 필요: 켜면 신규 가입자는 인증 메일을 눌러야 로그인(기존 계정 영향 없음), Supabase 기본 메일 발송 한도·회원가입 흐름(`auth/register` 안내 문구)도 같이 확인
 - [확인 필요] 0013은 운영 DB 적용·카탈로그 확인 완료. 남은 것은 화면 동작 확인(코드는 push 전이라 로컬 `npm run dev`에서 확인): 로그인한 일반 계정으로 커뮤니티 글 조회수·좋아요가 새로고침 후에도 유지되는지, 관리자의 글 숨김/해제가 되는지, 글 작성·수정이 되는지
 - [확인 필요] 0014(좋아요 토글)는 운영 DB 적용·카탈로그 확인 완료. 남은 것은 배포 후 화면 확인: 좋아요 → 버튼 표시 바뀜 → 새로고침해도 유지 → 다시 누르면 취소되고 숫자 -1, 비로그인은 로그인 안내 알림
 - 조회수는 새로고침할 때마다 +1 됨(글당 사용자 1회 제한 없음). 필요하면 세션/계정 기준 중복 방지 검토. 보안이라기보다 기능 품질 문제
-- [보안·낮음] `npm audit` 취약점 2건(postcss high, next moderate): Next 15.5.25 내부 postcss 이슈이고 자체 CSS만 빌드하는 구조라 실제 위험은 낮음. `npm audit fix --force`는 Next 16으로 올리는 breaking 변경이라 하지 말고, Next 15.x 패치 릴리스가 나오면 그때 업데이트
+- [보안·낮음] `npm audit` 취약점 2건(postcss high, next moderate): Next 15.5.25 내부 postcss 이슈이고 자체 CSS만 빌드하는 구조라 실제 위험은 낮음. `npm audit fix --force`는 Next 16으로 올리는 breaking 변경이라 하지 말고, Next 15.x 패치 릴리스가 나오면 그때 업데이트. 2026-09-20 기준 15.x 최신이 15.5.25(현재 버전)라 새 패치 없음, 15.x에 패치가 나온다는 보장도 없음(공식 수정은 Next 16.3.5뿐). 대안: `package.json`에 `"overrides": {"postcss": "^8.5.28"}`로 Next 내부 postcss만 교체(build·로컬 동작 확인 필요, 위험 낮음) 또는 여유 있을 때 Next 16 업그레이드. 진행 상황은 가끔 `npm audit`·`npm view next dist-tags`로 확인하거나 GitHub Dependabot 알림 사용
 - 일정 페이지(`src/app/schedule/page.tsx`) 레이아웃 변경 — 구체적인 방향은 아직 미정, 착수 전 논의 필요
 - 소개 섹션(`src/components/About.tsx`, 홈의 `#about`) 레이아웃 디자인 변경 — 구체적인 방향은 아직 미정, 착수 전 논의 필요
 - D-DAY 기능 추가 — 범위(어디에 어떻게 표시할지)는 아직 미정. 날짜 계산은 `src/lib/date.ts`의 `kstToday()`/`daysBetween()`을 재사용하면 됨 (목표 페이지의 "예정된 일목표" D-n 라벨이 같은 함수 사용)
