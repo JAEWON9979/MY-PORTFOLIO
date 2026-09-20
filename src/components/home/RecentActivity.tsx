@@ -13,24 +13,45 @@ import { useAuth } from "@/hooks/useAuth";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
-const FILE_ICON: Record<WorkFileType, string> = {
-  PDF: "📄",
-  PPTX: "📊",
-  DOCX: "📝",
-  기타: "📁",
-};
-
-const AVATAR_COLORS = [
-  "bg-blue-100 text-blue-700",
-  "bg-violet-100 text-violet-700",
-  "bg-amber-100 text-amber-700",
-  "bg-emerald-100 text-emerald-700",
-  "bg-rose-100 text-rose-700",
-];
-
-function avatarClass(name: string): string {
-  return AVATAR_COLORS[(name.charCodeAt(0) || 0) % AVATAR_COLORS.length];
+// 파일 형식별 단색 라인 아이콘 (PDF·DOCX는 문서, PPTX는 발표 자료, 기타는 폴더)
+function FileTypeIcon({ type }: { type: WorkFileType }) {
+  return (
+    <span
+      role="img"
+      aria-label={type}
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-200/70 text-zinc-600"
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        {type === "PPTX" ? (
+          <>
+            <rect x="3" y="4" width="18" height="12" rx="2" />
+            <path d="M12 16v4M8 20h8M8 12V9M12 12V7M16 12v-2" />
+          </>
+        ) : type === "기타" ? (
+          <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        ) : (
+          <>
+            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+            <path d="M14 3v5h5M9 13h6M9 17h6" />
+          </>
+        )}
+      </svg>
+    </span>
+  );
 }
+
+// 작성자 아바타는 색 없이 통일 (닉네임 첫 글자만 표시)
+const AVATAR_CLASS = "bg-zinc-200/70 text-zinc-700";
 
 function relativeTime(iso: string): string {
   const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -100,17 +121,11 @@ function GoalCard() {
     };
   }, [goals]);
 
-  const CAT_COLORS: Record<GoalCategory, string> = {
-    일목표: "text-sky-700",
-    주목표: "text-violet-700",
-    연목표: "text-amber-700",
-  };
-
   function CatRow({ cat }: { cat: GoalCategory }) {
     const { done, total } = stats[cat];
     return (
       <div className="flex items-center justify-between text-xs">
-        <span className={`font-medium ${CAT_COLORS[cat]}`}>{cat}</span>
+        <span className="font-medium text-zinc-900">{cat}</span>
         <span className="text-zinc-500">
           {done}
           <span className="text-zinc-300">/{total}</span>
@@ -180,9 +195,7 @@ function WorksCard() {
                 onClick={() => router.push(`/works/${work.id}`)}
                 className="flex w-full items-center gap-3 rounded-lg px-1 py-1 text-left hover:bg-white"
               >
-                <span className="text-lg" role="img" aria-label={work.fileType}>
-                  {FILE_ICON[work.fileType]}
-                </span>
+                <FileTypeIcon type={work.fileType} />
                 <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-900">
                   {work.title}
                 </span>
@@ -229,7 +242,7 @@ function CommunityCard() {
                 >
                   {/* avatar */}
                   <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${avatarClass(post.authorName)}`}
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${AVATAR_CLASS}`}
                   >
                     {initial}
                   </span>
