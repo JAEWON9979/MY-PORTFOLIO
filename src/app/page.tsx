@@ -1,4 +1,5 @@
 import About from "@/components/About";
+import BookIntro from "@/components/BookIntro";
 import Career from "@/components/Career";
 import Certifications from "@/components/Certifications";
 import Footer from "@/components/Footer";
@@ -10,6 +11,7 @@ import Skills from "@/components/Skills";
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col bg-white">
+      <BookIntro />
       <Header />
       <main className="flex-1">
         <Hero />

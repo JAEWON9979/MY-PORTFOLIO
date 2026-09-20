@@ -12,6 +12,11 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* 이미 본 세션·동작 줄이기: 홈 입장 인트로(BookIntro)를 처음부터 숨김 */
+html[data-intro-skip] [data-book-intro] {
+  display: none;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
