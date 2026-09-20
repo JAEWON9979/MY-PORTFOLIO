@@ -25,7 +25,7 @@ export default function GoalRing({ rate, size = 112 }: GoalRingProps) {
         cy={cy}
         r={r}
         fill="none"
-        stroke="#f4f4f5"
+        stroke="#e4e4e7"
         strokeWidth="12"
       />
       {/* progress arc */}

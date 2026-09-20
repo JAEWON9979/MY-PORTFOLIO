@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import GoalRing from "./GoalRing";
 import { useGoals, type Goal, type GoalCategory } from "@/hooks/useGoals";
 import { useWorks, type WorkFileType } from "@/hooks/useWorks";
@@ -50,14 +51,23 @@ function catCount(goals: Goal[], cat: GoalCategory) {
 function CardShell({
   title,
   href,
+  delay = 0,
   children,
 }: {
   title: string;
   href: string;
+  delay?: number;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-5">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay }}
+      // hover 효과는 translate/box-shadow만 전환해 framer-motion의 transform 애니메이션과 겹치지 않게 함
+      className="flex flex-col rounded-3xl bg-zinc-50 p-6 transition-[translate,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md"
+    >
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-zinc-900">{title}</h3>
         <Link
@@ -68,7 +78,7 @@ function CardShell({
         </Link>
       </div>
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -110,7 +120,7 @@ function GoalCard() {
   }
 
   return (
-    <CardShell title="목표 달성률" href="/goals">
+    <CardShell title="목표 달성률" href="/goals" delay={0.1}>
       {!isLoaded || !authLoaded ? (
         <div className="flex h-24 items-center justify-center">
           <p className="text-xs text-zinc-400">불러오는 중...</p>
@@ -152,7 +162,7 @@ function WorksCard() {
   const recent = useMemo(() => works.slice(0, 3), [works]);
 
   return (
-    <CardShell title="최근 학습기록" href="/works">
+    <CardShell title="최근 학습기록" href="/works" delay={0.2}>
       {!isLoaded ? (
         <div className="flex h-24 items-center justify-center">
           <p className="text-xs text-zinc-400">불러오는 중...</p>
@@ -168,7 +178,7 @@ function WorksCard() {
               <button
                 type="button"
                 onClick={() => router.push(`/works/${work.id}`)}
-                className="flex w-full items-center gap-3 rounded-lg px-1 py-1 text-left hover:bg-zinc-50"
+                className="flex w-full items-center gap-3 rounded-lg px-1 py-1 text-left hover:bg-white"
               >
                 <span className="text-lg" role="img" aria-label={work.fileType}>
                   {FILE_ICON[work.fileType]}
@@ -196,7 +206,7 @@ function CommunityCard() {
   const recent = useMemo(() => posts.slice(0, 3), [posts]);
 
   return (
-    <CardShell title="커뮤니티 최신 글" href="/community">
+    <CardShell title="커뮤니티 최신 글" href="/community" delay={0.1}>
       {!isLoaded ? (
         <div className="flex h-16 items-center justify-center">
           <p className="text-xs text-zinc-400">불러오는 중...</p>
@@ -206,7 +216,7 @@ function CommunityCard() {
           <p className="text-xs text-zinc-400">아직 등록된 글이 없습니다.</p>
         </div>
       ) : (
-        <ul className="flex flex-col divide-y divide-zinc-100">
+        <ul className="flex flex-col divide-y divide-zinc-200/70">
           {recent.map((post) => {
             const count = comments.filter((c) => c.postId === post.id).length;
             const initial = post.authorName.charAt(0);
@@ -215,7 +225,7 @@ function CommunityCard() {
                 <button
                   type="button"
                   onClick={() => router.push(`/community/${post.id}`)}
-                  className="flex w-full items-center gap-3 py-3 text-left hover:bg-zinc-50 rounded-lg px-1"
+                  className="flex w-full items-center gap-3 py-3 text-left hover:bg-white rounded-lg px-1"
                 >
                   {/* avatar */}
                   <span
@@ -265,7 +275,15 @@ function CommunityCard() {
 export default function RecentActivity() {
   return (
     <section className="mx-auto max-w-3xl px-6 py-12">
-      <h2 className="mb-6 text-2xl font-bold text-zinc-900">최근 활동</h2>
+      <motion.h2
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="mb-6 text-2xl font-bold text-zinc-900"
+      >
+        최근 활동
+      </motion.h2>
 
       {/* top row: goal ring + recent works */}
       <div className="mb-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
