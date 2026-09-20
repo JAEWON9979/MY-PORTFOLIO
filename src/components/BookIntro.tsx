@@ -36,6 +36,14 @@ function getSeen(): boolean {
   }
 }
 
+// 표지 제목용 시스템 세리프 서체 (웹폰트를 내려받지 않음)
+const SERIF =
+  '"Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif';
+
+// 천 표지의 결: 흰 노이즈를 overlay로 아주 옅게 깐다 (SVG data URI, 이미지 파일 없음)
+const CLOTH_TEXTURE =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
+
 const OPEN_EASE: [number, number, number, number] = [0.7, 0, 0.2, 1];
 
 export default function BookIntro() {
@@ -182,52 +190,73 @@ export default function BookIntro() {
               ease: opening ? OPEN_EASE : "easeOut",
             }}
           >
-            {/* 바깥면: 절제된 에디토리얼 표지 — 왼쪽 위 라벨, 왼쪽 아래 큰 이름 */}
+            {/* 바깥면: 천 표지 느낌의 책 — 작은 은박 세리프 제목 하나와 장식선만 둔다 */}
             <div
               className="absolute inset-0 overflow-hidden"
               style={{
                 backfaceVisibility: "hidden",
                 background:
-                  "radial-gradient(120% 90% at 85% 0%, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0) 55%), linear-gradient(160deg, #1f1f23 0%, #131316 55%, #0b0b0d 100%)",
+                  "radial-gradient(130% 100% at 78% 0%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 55%), linear-gradient(165deg, #1d1d20 0%, #111113 60%, #0a0a0c 100%)",
               }}
             >
+              {/* 천 표지의 미세한 결 */}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.16] mix-blend-overlay"
+                style={{ backgroundImage: CLOTH_TEXTURE, backgroundSize: "160px 160px" }}
+              />
+              {/* 위아래로 살짝 깊어지는 음영 */}
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 12%, rgba(0,0,0,0) 72%, rgba(0,0,0,0.32) 100%)",
+                }}
+              />
               {/* 은은한 빛 결 */}
               <div
                 className="pointer-events-none absolute inset-0"
                 style={{
                   background:
-                    "linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.035) 50%, transparent 62%)",
+                    "linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.03) 50%, transparent 62%)",
                 }}
               />
-              {/* 책등 그림자와 책등 홈 */}
+
+              {/* 책등 그림자 + 표지가 꺾이는 홈(어두운 선 + 밝은 선) */}
               <div className="pointer-events-none absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-black/60 to-transparent" />
-              <div className="pointer-events-none absolute inset-y-0 left-7 w-px bg-white/[0.07]" />
+              <div className="pointer-events-none absolute inset-y-0 left-[26px] w-px bg-black/60" />
+              <div className="pointer-events-none absolute inset-y-0 left-[27px] w-px bg-white/[0.09]" />
 
-              <motion.p
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.1 }}
-                className="absolute top-10 px-[max(2.5rem,8vw)] text-[11px] font-medium tracking-[0.35em] text-zinc-500"
-              >
-                JAEWON&apos;S PORTFOLIO
-              </motion.p>
-
-              <div className="absolute bottom-[15vh] px-[max(2.5rem,8vw)]">
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.7, delay: 0.25 }}
-                  style={{ transformOrigin: "left center" }}
-                  className="h-px w-16 bg-white/25"
-                />
+              {/* 제목 + 장식선 */}
+              <div className="absolute inset-x-0 top-[34%] flex flex-col items-center px-6 text-center">
                 <motion.p
-                  initial={{ opacity: 0, y: 14 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.35 }}
-                  className="mt-6 text-6xl font-bold tracking-tight text-white sm:text-8xl"
+                  transition={{ duration: 0.9, delay: 0.15 }}
+                  className="text-[13px] uppercase tracking-[0.4em] sm:text-[15px]"
+                  style={{
+                    fontFamily: SERIF,
+                    // 은박 스탬프처럼 위에서 아래로 살짝 어두워지는 금속 질감
+                    backgroundImage: "linear-gradient(180deg, #fafafa 0%, #a1a1aa 100%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                    filter: "drop-shadow(0 1px 0 rgba(0,0,0,0.65))",
+                  }}
                 >
-                  김재원
+                  Portfolio of Jaewon
                 </motion.p>
+
+                <motion.div
+                  initial={{ opacity: 0, scaleX: 0.4 }}
+                  animate={{ opacity: 1, scaleX: 1 }}
+                  transition={{ duration: 0.9, delay: 0.35 }}
+                  className="mt-6 flex items-center gap-3 text-zinc-500"
+                  aria-hidden
+                >
+                  <span className="h-px w-10 bg-gradient-to-r from-transparent to-zinc-500/70" />
+                  <span className="h-1 w-1 rotate-45 bg-zinc-400/80" />
+                  <span className="h-px w-10 bg-gradient-to-l from-transparent to-zinc-500/70" />
+                </motion.div>
               </div>
             </div>
             {/* 안쪽면 */}
