@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import RowActions from "@/components/ui/RowActions";
 import { useAuth } from "@/hooks/useAuth";
 import { useBackdropClose } from "@/hooks/useBackdropClose";
 import {
@@ -17,32 +19,6 @@ import {
   type CourseCategory,
   type CourseSemester,
 } from "@/hooks/useCourses";
-
-// ── 카테고리 배지 색상 ─────────────────────────────────────────────────────────
-const CATEGORY_STYLES: Record<CourseCategory, string> = {
-  계공: "bg-violet-50 text-violet-700",
-  교필: "bg-amber-50 text-amber-700",
-  교선: "bg-sky-50 text-sky-700",
-  전공: "bg-indigo-50 text-indigo-700",
-};
-
-// ── StatCard ───────────────────────────────────────────────────────────────────
-
-interface StatCardProps {
-  label: string;
-  value: string;
-  sub?: string;
-}
-
-function StatCard({ label, value, sub }: StatCardProps) {
-  return (
-    <div className="rounded-2xl border border-zinc-200 bg-white px-5 py-4">
-      <p className="text-xs font-medium text-zinc-400">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-zinc-900">{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-zinc-500">{sub}</p>}
-    </div>
-  );
-}
 
 // ── CourseModal ────────────────────────────────────────────────────────────────
 
@@ -92,7 +68,7 @@ function CourseModal({ initialCourse, onClose, onSubmit }: CourseModalProps) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       {...backdropProps}
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-3xl bg-white p-7 shadow-xl">
         <h2 className="mb-5 text-lg font-bold text-zinc-900">
           {initialCourse ? "과목 수정" : "과목 추가"}
         </h2>
@@ -104,7 +80,7 @@ function CourseModal({ initialCourse, onClose, onSubmit }: CourseModalProps) {
               <select
                 value={year}
                 onChange={(e) => setYear(Number(e.target.value))}
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
               >
                 {[1, 2, 3, 4].map((y) => (
                   <option key={y} value={y}>{y}학년</option>
@@ -116,7 +92,7 @@ function CourseModal({ initialCourse, onClose, onSubmit }: CourseModalProps) {
               <select
                 value={semester}
                 onChange={(e) => setSemester(e.target.value as CourseSemester)}
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
               >
                 <option value="1학기">1학기</option>
                 <option value="2학기">2학기</option>
@@ -135,7 +111,7 @@ function CourseModal({ initialCourse, onClose, onSubmit }: CourseModalProps) {
               required
               maxLength={60}
               placeholder="예: 행정학원론"
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
             />
           </div>
 
@@ -151,7 +127,7 @@ function CourseModal({ initialCourse, onClose, onSubmit }: CourseModalProps) {
                 max={9}
                 step={0.5}
                 required
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
               />
             </div>
             <div>
@@ -159,7 +135,7 @@ function CourseModal({ initialCourse, onClose, onSubmit }: CourseModalProps) {
               <select
                 value={grade}
                 onChange={(e) => setGrade(e.target.value as CourseGrade)}
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
               >
                 {GRADE_OPTIONS.map((g) => (
                   <option key={g} value={g}>{g}</option>
@@ -171,7 +147,7 @@ function CourseModal({ initialCourse, onClose, onSubmit }: CourseModalProps) {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value as CourseCategory)}
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
               >
                 {CATEGORY_OPTIONS.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -186,14 +162,14 @@ function CourseModal({ initialCourse, onClose, onSubmit }: CourseModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100"
+              className="rounded-full px-5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
+              className="rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
             >
               {initialCourse ? "수정" : "추가"}
             </button>
@@ -306,55 +282,107 @@ export default function GradesPage() {
       <main className="flex-1">
         <section className="mx-auto max-w-3xl px-6 py-12">
           {/* 페이지 헤더 */}
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-            <h1 className="text-2xl font-bold text-zinc-900">학점관리</h1>
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-zinc-900">학점관리</h1>
+              {isLoaded && (
+                <p className="mt-1 text-sm text-zinc-500">
+                  {courses.length === 0
+                    ? "등록된 과목이 없습니다"
+                    : `총 ${courses.length}개 과목`}
+                </p>
+              )}
+            </div>
             <button
               type="button"
               onClick={openAddModal}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+              className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-800"
             >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                aria-hidden
+              >
+                <path strokeLinecap="round" d="M6 1.5v9M1.5 6h9" />
+              </svg>
               과목 추가
             </button>
           </div>
 
-          {/* 전체 통계 카드 */}
+          {/* 전체 통계: 평점(막대) + 학점 3종 */}
           {isLoaded && (
-            <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <StatCard
-                label="전체 평점"
-                value={courses.length === 0 ? "—" : stats.gpa.toFixed(2)}
-                sub="/ 4.5"
-              />
-              <StatCard
-                label="총 학점"
-                value={String(stats.totalCredits)}
-                sub="학점"
-              />
-              <StatCard
-                label="전공 학점"
-                value={String(stats.gyeGongCredits)}
-                sub="계공 + 전공"
-              />
-              <StatCard
-                label="교양 학점"
-                value={String(stats.gyoYangCredits)}
-                sub="교필 + 교선"
-              />
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-8 rounded-3xl bg-zinc-50 p-6 sm:p-7"
+            >
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-10">
+                <div className="sm:w-48">
+                  <p className="text-xs font-medium text-zinc-500">전체 평점</p>
+                  <p className="mt-1 flex items-baseline gap-1.5">
+                    <span className="text-4xl font-bold tabular-nums text-zinc-900">
+                      {courses.length === 0 ? "—" : stats.gpa.toFixed(2)}
+                    </span>
+                    <span className="text-sm text-zinc-400">/ 4.5</span>
+                  </p>
+                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-zinc-200">
+                    <div
+                      className="h-full rounded-full bg-zinc-900 transition-[width] duration-500"
+                      style={{
+                        width: `${
+                          courses.length === 0
+                            ? 0
+                            : Math.min((stats.gpa / 4.5) * 100, 100)
+                        }%`,
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="grid flex-1 grid-cols-3 gap-4 sm:border-l sm:border-zinc-200 sm:pl-10">
+                  {[
+                    { label: "총 학점", value: stats.totalCredits, sub: "학점" },
+                    { label: "전공 학점", value: stats.gyeGongCredits, sub: "계공 + 전공" },
+                    { label: "교양 학점", value: stats.gyoYangCredits, sub: "교필 + 교선" },
+                  ].map((item) => (
+                    <div key={item.label}>
+                      <p className="text-xs font-medium text-zinc-500">{item.label}</p>
+                      <p className="mt-1 text-2xl font-bold tabular-nums text-zinc-900">
+                        {item.value}
+                      </p>
+                      <p className="mt-0.5 text-xs text-zinc-400">{item.sub}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
           )}
 
           {/* 학기 선택 드롭다운 */}
           {isLoaded && courses.length === 0 ? (
-            <p className="text-sm text-zinc-500">
-              등록된 과목이 없습니다. 과목을 추가해보세요.
-            </p>
+            <div className="rounded-3xl border border-dashed border-zinc-200 px-6 py-14 text-center">
+              <p className="text-sm text-zinc-500">
+                등록된 과목이 없습니다. 과목을 추가해보세요.
+              </p>
+              <button
+                type="button"
+                onClick={openAddModal}
+                className="mt-4 rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+              >
+                과목 추가
+              </button>
+            </div>
           ) : isLoaded && (
             <>
-              <div className="mb-5 flex items-center gap-3">
+              <div className="mb-5 flex flex-wrap items-center gap-3">
                 <select
                   value={selectedKey}
                   onChange={(e) => setSelectedKey(e.target.value)}
-                  className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                  className="rounded-full border border-transparent bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-900 transition-colors focus:border-zinc-300 focus:bg-white focus:outline-none"
                 >
                   {semesterGroups.map((g) => (
                     <option key={g.key} value={g.key}>
@@ -364,10 +392,10 @@ export default function GradesPage() {
                 </select>
                 {selectedGroup && (
                   <>
-                    <span className="rounded-full bg-zinc-900 px-2.5 py-0.5 text-xs font-medium text-white">
-                      {selectedGroup.gpa.toFixed(2)}
+                    <span className="rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium tabular-nums text-white">
+                      평점 {selectedGroup.gpa.toFixed(2)}
                     </span>
-                    <span className="text-sm text-zinc-400">
+                    <span className="text-sm text-zinc-500">
                       {selectedGroup.totalCredits}학점
                     </span>
                   </>
@@ -376,51 +404,32 @@ export default function GradesPage() {
 
               {/* 선택된 학기 과목 목록 */}
               {selectedGroup && (
-                <div className="flex flex-col gap-2">
-                  {selectedGroup.courses.map((course) => (
-                    <div
+                <div className="flex flex-col gap-2.5">
+                  {selectedGroup.courses.map((course, index) => (
+                    <motion.div
                       key={course.id}
-                      className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3 transition-shadow hover:shadow-sm"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.35, delay: Math.min(index, 8) * 0.04 }}
                     >
-                      <p className="flex-1 truncate text-sm font-medium text-zinc-900">
-                        {course.name}
-                      </p>
-
-                      <div className="flex shrink-0 items-center gap-2">
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${CATEGORY_STYLES[course.category]}`}
-                        >
-                          {course.category}
-                        </span>
-                        <span className="text-xs text-zinc-400">
-                          {course.credit}학점
-                        </span>
-                        <span
-                          className={`w-7 text-center text-sm font-bold ${
-                            course.grade === "P" ? "text-emerald-600" : "text-zinc-900"
-                          }`}
-                        >
+                      <div className="group flex items-center gap-4 rounded-2xl bg-zinc-50 px-5 py-4 transition-colors hover:bg-zinc-100/70">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-sm font-bold text-zinc-900 ring-1 ring-zinc-200">
                           {course.grade}
                         </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[15px] font-medium text-zinc-900">
+                            {course.name}
+                          </p>
+                          <p className="mt-0.5 text-xs text-zinc-500">
+                            {course.category} · {course.credit}학점
+                          </p>
+                        </div>
+                        <RowActions
+                          onEdit={() => openEditModal(course)}
+                          onDelete={() => deleteCourse(course.id)}
+                        />
                       </div>
-
-                      <div className="flex shrink-0 gap-1">
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(course)}
-                          className="rounded px-1.5 py-1 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
-                        >
-                          수정
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => deleteCourse(course.id)}
-                          className="rounded px-1.5 py-1 text-xs text-zinc-400 hover:bg-red-50 hover:text-red-600"
-                        >
-                          삭제
-                        </button>
-                      </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
