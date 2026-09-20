@@ -182,39 +182,53 @@ export default function BookIntro() {
               ease: opening ? OPEN_EASE : "easeOut",
             }}
           >
-            {/* 바깥면 */}
+            {/* 바깥면: 절제된 에디토리얼 표지 — 왼쪽 위 라벨, 왼쪽 아래 큰 이름 */}
             <div
-              className="absolute inset-0 flex items-center justify-center bg-zinc-900"
-              style={{ backfaceVisibility: "hidden" }}
+              className="absolute inset-0 overflow-hidden"
+              style={{
+                backfaceVisibility: "hidden",
+                background:
+                  "radial-gradient(120% 90% at 85% 0%, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0) 55%), linear-gradient(160deg, #1f1f23 0%, #131316 55%, #0b0b0d 100%)",
+              }}
             >
-              {/* 책등 */}
+              {/* 은은한 빛 결 */}
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.035) 50%, transparent 62%)",
+                }}
+              />
+              {/* 책등 그림자와 책등 홈 */}
               <div className="pointer-events-none absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-black/60 to-transparent" />
-              {/* 표지 안쪽 테두리 */}
-              <div className="pointer-events-none absolute inset-6 rounded-3xl border border-white/10 sm:inset-10" />
-
-              <div className="text-center">
-                <p className="text-xs font-medium tracking-[0.3em] text-zinc-500">
-                  JAEWON&apos;S PORTFOLIO
-                </p>
-                <p className="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl">
-                  김재원
-                </p>
-                <div className="mx-auto mt-6 h-px w-12 bg-white/30" />
-              </div>
+              <div className="pointer-events-none absolute inset-y-0 left-7 w-px bg-white/[0.07]" />
 
               <motion.p
-                aria-hidden
-                className="absolute bottom-10 text-xs text-zinc-500"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: opening ? 0 : [0.3, 0.9, 0.3] }}
-                transition={
-                  opening
-                    ? { duration: 0.2 }
-                    : { duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: 0.6 }
-                }
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.1 }}
+                className="absolute top-10 px-[max(2.5rem,8vw)] text-[11px] font-medium tracking-[0.35em] text-zinc-500"
               >
-                클릭해서 열기
+                JAEWON&apos;S PORTFOLIO
               </motion.p>
+
+              <div className="absolute bottom-[15vh] px-[max(2.5rem,8vw)]">
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.7, delay: 0.25 }}
+                  style={{ transformOrigin: "left center" }}
+                  className="h-px w-16 bg-white/25"
+                />
+                <motion.p
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.35 }}
+                  className="mt-6 text-6xl font-bold tracking-tight text-white sm:text-8xl"
+                >
+                  김재원
+                </motion.p>
+              </div>
             </div>
             {/* 안쪽면 */}
             <div
