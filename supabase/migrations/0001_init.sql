@@ -1,4 +1,9 @@
 -- ============================================================
+-- !! 경고: 새(빈) Supabase 프로젝트 전용. 운영 DB에서 절대 실행하지 말 것 !!
+-- 아래 "drop existing objects" 구간이 profiles/posts/comments/goals/works/schedules를
+-- drop table ... cascade 로 전부 지우므로, 운영 DB에서 실행하면 모든 데이터가 사라진다.
+-- 이미 운영 중인 DB에는 0002 이후의 변경 파일만 필요한 것을 골라 적용할 것.
+-- ============================================================
 -- Portfolio — complete schema (single-file setup)
 -- Run once on a fresh Supabase project.
 -- Admin: sign up at /auth/register with admin@naver.com

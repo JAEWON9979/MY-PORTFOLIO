@@ -3,6 +3,7 @@
 완료된 작업과 그 결정 배경을 시간순으로 기록합니다. 최신 항목을 맨 위에 추가하세요.
 
 ## 2026-09-20
+- 정리: `public/`의 미사용 Next 기본 SVG 5개(file/globe/next/vercel/window, 합 2.3KB) 삭제 — `src`·README·설정 어디에서도 참조가 없음을 grep으로 확인, 삭제 후 lint/build 통과. `public/`이 비어 Git 추적 대상이 없어졌지만 Next는 빈/없는 `public/`도 문제없이 빌드함(정적 파일이 필요해지면 다시 만들면 됨). 같은 날 `0001_init.sql` 맨 위에 "새 프로젝트 전용, 운영 DB 실행 금지" 경고 주석 추가(첫 구간이 `drop table ... cascade`라 운영 DB에서 실행하면 전체 데이터가 삭제됨, SQL 동작은 그대로)
 - 마이그레이션 파일 정리: 0013이 만들었다가 0014가 다시 지우는 `increment_post_like`를 0013에서 제거하고 헤더 주석을 실제 구조(조회수는 0013, 좋아요 토글은 0014)에 맞춤. 운영 DB에는 옛 버전 0013이 적용됐다가 0014로 함수가 삭제된 상태라 최종 상태는 동일하고, 0014의 `drop function if exists`는 운영 DB용 no-op 안전장치로 유지. 마이그레이션 이력 테이블이 없어 운영 DB에 재실행하지 않음
 - 커뮤니티 좋아요를 "글당 계정 1회, 다시 누르면 취소"로 변경(마이그레이션 `0014_post_likes.sql`, 운영 DB 적용 완료 — 자동 모드 분류기가 `SUPABASE_DB_URL` 직접 접속을 계속 차단했고(허용 규칙 `Bash(node *run-sql.mjs *)`나 기존 `Bash(npm install *)`도 자동 모드에선 분류기를 못 이김), 사용자가 권한 모드를 Manual로 바꿔 승인 창에서 허용한 뒤 임시 폴더의 `run-sql.mjs`(SQL 파일을 트랜잭션으로 실행, 실패 시 롤백)로 적용하고 `pg_policies`/`pg_proc`/`pg_trigger` 조회로 정책·함수·트리거·RLS 상태를 확인): 0013에서 좋아요를 실제로 저장되게 고쳤더니 로그인한 누구나 무한히 누를 수 있다는 게 드러나서(원래 코드에 1회 제한이 없었고, 예전엔 저장이 안 돼 안 보였을 뿐) 바로 수정
   - `post_likes(post_id, user_id)` 복합 기본키 테이블 신설(RLS는 본인 행 조회만 허용, 변경은 RPC로만), `toggle_post_like` security definer RPC가 행 추가/삭제와 `posts.like_count` 증감을 한 함수에서 처리하고 최종 상태(true/false)를 반환. 동시에 두 번 눌려도 실제로 행이 바뀐 경우에만 카운트가 변하도록 `found` 검사. 0013의 `increment_post_like`는 삭제. 기존에 쌓인 like_count는 누가 눌렀는지 기록이 없어 그대로 두고 이후부터 새 방식으로 셈
