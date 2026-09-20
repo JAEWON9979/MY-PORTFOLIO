@@ -31,51 +31,61 @@ function getSeen(): boolean {
   }
 }
 
-// 오른쪽 아래 모서리가 말려 올라간 종이. 100×140 좌표계에서 (100,140)이 표지의 꼭짓점.
-// CURL_EDGE는 오른쪽 위에서 시작해 왼쪽의 뾰족한 끝(꼭짓점)을 돌아 아래로 내려오는 말림 윤곽이고,
-// 그 오른쪽(CURL_WEDGE)은 종이가 벗겨져 아래가 비쳐 보이는 자리.
-const CURL_EDGE = "M98 4 C76 10 44 26 26 52 C32 70 44 100 66 140";
-const CURL_WEDGE = `${CURL_EDGE} L100 140 L100 4 Z`;
-const CURL_OUTSIDE = `M-60 -60 H160 V200 H-60 Z ${CURL_WEDGE}`;
+// 오른쪽 아래 모서리가 안쪽으로 접혀 올라온 종이. 471×442 좌표계에서 (471,442)가 표지의 꼭짓점.
+// - CURL_FOLD: 종이가 접히는 대각선(오른쪽 위 → 왼쪽 아래). 그 오른쪽은 종이가 벗겨져 아래가 비치는 자리
+// - CURL_EDGE: 접혀 올라온 뒷면(잎 모양)의 안쪽 윤곽. 왼쪽에 뾰족한 끝이 있고 위쪽은 완만하게, 아래쪽은 둥글게 내려옴
+// - CURL_FLAP: EDGE와 FOLD 사이, 접혀 올라온 뒷면
+const CURL_EDGE = "M470 36 C408 84 290 110 208 148 C226 215 215 330 112 442";
+const CURL_FOLD = "M470 36 Q307 261 112 442";
+const CURL_FLAP = `${CURL_EDGE} Q307 261 470 36 Z`;
+const CURL_REVEALED = `${CURL_FOLD} L471 442 L471 36 Z`;
+const CURL_OUTSIDE = `M-200 -200 H700 V700 H-200 Z ${CURL_FLAP}`;
 
 function CurledCorner() {
   return (
     <svg
-      viewBox="0 0 100 140"
+      viewBox="0 0 471 442"
       aria-hidden="true"
       className="pointer-events-none absolute bottom-0 right-0 overflow-visible"
-      style={{ width: "clamp(130px, 22vw, 290px)", aspectRatio: "100 / 140" }}
+      style={{ width: "clamp(150px, 31vw, 430px)", aspectRatio: "471 / 442" }}
     >
       <defs>
-        {/* 벗겨져 드러난 자리의 음영: 말림 윤곽 가까이가 짙고 모서리 쪽으로 옅어짐 */}
-        <linearGradient id="curl-revealed" x1="30" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#000000" stopOpacity="0.08" />
-          <stop offset="1" stopColor="#000000" stopOpacity="0.02" />
+        {/* 접혀 올라온 뒷면: 안쪽 윤곽 쪽은 밝고 접히는 선 쪽이 살짝 어두움 */}
+        <linearGradient id="curl-back" x1="200" y1="140" x2="380" y2="330" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.55" stopColor="#fcfcfc" />
+          <stop offset="1" stopColor="#e9e9ec" />
         </linearGradient>
-        <clipPath id="curl-wedge">
-          <path d={CURL_WEDGE} />
+        {/* 벗겨져 드러난 자리: 접히는 선 가까이가 짙고 모서리 쪽으로 옅어짐 */}
+        <linearGradient id="curl-revealed" x1="300" y1="250" x2="471" y2="442" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#000000" stopOpacity="0.13" />
+          <stop offset="1" stopColor="#000000" stopOpacity="0.04" />
+        </linearGradient>
+        <clipPath id="curl-revealed-clip">
+          <path d={CURL_REVEALED} />
         </clipPath>
-        <clipPath id="curl-outside">
+        <clipPath id="curl-outside-clip">
           <path d={CURL_OUTSIDE} clipRule="evenodd" />
         </clipPath>
-        <filter id="curl-blur" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="3" />
+        <filter id="curl-blur" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="9" />
         </filter>
       </defs>
-      {/* 벗겨져 드러난 자리 */}
-      <path d={CURL_WEDGE} fill="url(#curl-revealed)" />
-      {/* 말린 종이가 드러난 자리에 드리우는 그림자 */}
-      <g clipPath="url(#curl-wedge)">
-        <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.16" strokeWidth="6" filter="url(#curl-blur)" />
+      {/* 벗겨져 드러난 자리 + 접힌 종이가 드리우는 그림자 */}
+      <path d={CURL_REVEALED} fill="url(#curl-revealed)" />
+      <g clipPath="url(#curl-revealed-clip)">
+        <path d={CURL_FOLD} fill="none" stroke="#000000" strokeOpacity="0.16" strokeWidth="30" filter="url(#curl-blur)" />
       </g>
-      {/* 말린 종이 바깥쪽의 둥근 음영 */}
-      <g clipPath="url(#curl-outside)">
-        <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.08" strokeWidth="8" filter="url(#curl-blur)" />
+      {/* 표지 앞면 아래쪽에 깔리는 옅은 그림자 */}
+      <ellipse cx="120" cy="480" rx="230" ry="70" fill="#000000" fillOpacity="0.07" filter="url(#curl-blur)" />
+      {/* 접혀 올라온 뒷면이 표지 앞면에 드리우는 그림자 */}
+      <g clipPath="url(#curl-outside-clip)">
+        <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.16" strokeWidth="16" filter="url(#curl-blur)" />
       </g>
-      {/* 표지 아래쪽에 깔리는 옅은 그림자 */}
-      <ellipse cx="36" cy="146" rx="46" ry="11" fill="#000000" fillOpacity="0.07" filter="url(#curl-blur)" />
-      {/* 말림 윤곽선 */}
-      <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.14" strokeWidth="0.45" />
+      {/* 접혀 올라온 뒷면 */}
+      <path d={CURL_FLAP} fill="url(#curl-back)" />
+      {/* 안쪽 윤곽선 */}
+      <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.15" strokeWidth="1.2" />
     </svg>
   );
 }
@@ -190,7 +200,7 @@ export default function BookIntro() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="absolute bottom-8 text-xs text-zinc-500"
+              className="absolute bottom-8 left-6 text-xs text-zinc-500 sm:left-auto"
             >
               화면을 누르면 바로 넘어갑니다
             </motion.p>
