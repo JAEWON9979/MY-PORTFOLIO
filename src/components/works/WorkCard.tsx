@@ -2,20 +2,11 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import FileTypeIcon from "@/components/works/FileTypeIcon";
 import type { Work } from "@/hooks/useWorks";
 
-const categoryStyles: Record<Work["category"], string> = {
-  수업과제: "bg-blue-50 text-blue-700",
-  개인실습: "bg-amber-50 text-amber-700",
-  팀프로젝트: "bg-purple-50 text-purple-700",
-};
-
-const fileTypeIcon: Record<Work["fileType"], string> = {
-  PDF: "📄",
-  PPTX: "📊",
-  DOCX: "📝",
-  기타: "📁",
-};
+const chipClass =
+  "rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-600 ring-1 ring-zinc-200";
 
 export default function WorkCard({
   work,
@@ -34,10 +25,11 @@ export default function WorkCard({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") router.push(`/works/${work.id}`);
       }}
-      className="flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400"
+      // hover 전환은 translate/box-shadow만 지정해 부모 motion 요소의 transform 애니메이션과 겹치지 않게 함
+      className="flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl bg-zinc-50 transition-[translate,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900"
     >
       {work.thumbnailUrl && (
-        <div className="relative aspect-video w-full bg-zinc-100">
+        <div className="relative aspect-video w-full bg-zinc-200">
           <Image
             src={work.thumbnailUrl}
             alt={work.title}
@@ -48,47 +40,38 @@ export default function WorkCard({
         </div>
       )}
 
-      <div className="flex flex-1 flex-col p-5">
-        <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="flex flex-1 flex-col p-6">
+        <div className="mb-4 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span
-              className={`rounded-full px-2.5 py-1 text-xs font-medium ${categoryStyles[work.category]}`}
-            >
-              {work.category}
-            </span>
+            <span className={chipClass}>{work.category}</span>
             {isAdmin && !work.isPublic && (
-              <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-white">
+              <span className="rounded-full bg-zinc-900 px-2.5 py-0.5 text-xs font-medium text-white">
                 비공개
               </span>
             )}
           </div>
-          <span
-            className="text-lg"
-            role="img"
-            aria-label={work.fileType}
-            title={work.fileType}
-          >
-            {fileTypeIcon[work.fileType]}
-          </span>
+          <FileTypeIcon type={work.fileType} size="sm" />
         </div>
 
         <h3 className="text-base font-semibold text-zinc-900">{work.title}</h3>
-        <p className="mt-1 line-clamp-2 flex-1 text-sm text-zinc-600">
+        <p className="mt-1.5 line-clamp-2 flex-1 text-sm leading-6 text-zinc-600">
           {work.description}
         </p>
 
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {work.techTags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+        {work.techTags.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            {work.techTags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-zinc-200/60 px-2.5 py-0.5 text-xs text-zinc-600"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
 
-        <p className="mt-4 text-xs text-zinc-500">{work.date}</p>
+        <p className="mt-5 text-xs tabular-nums text-zinc-400">{work.date}</p>
       </div>
     </div>
   );

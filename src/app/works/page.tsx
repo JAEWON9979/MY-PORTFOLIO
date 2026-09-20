@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WorkCard from "@/components/works/WorkCard";
@@ -58,26 +59,46 @@ export default function WorksPage() {
       <main className="flex-1">
         <section className="mx-auto max-w-5xl px-6 py-12">
           {/* Page header */}
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-            <h1 className="text-2xl font-bold text-zinc-900">학습 기록</h1>
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-zinc-900">학습 기록</h1>
+              {isLoaded && (
+                <p className="mt-1 text-sm text-zinc-500">
+                  {works.length === 0
+                    ? "등록된 기록이 없습니다"
+                    : `총 ${works.length}개의 기록`}
+                </p>
+              )}
+            </div>
             {isAdmin && (
               <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-800"
               >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  aria-hidden
+                >
+                  <path strokeLinecap="round" d="M6 1.5v9M1.5 6h9" />
+                </svg>
                 작업물 추가
               </button>
             )}
           </div>
 
           {/* Search + sort */}
-          <div className="mb-4 flex items-center gap-2">
+          <div className="mb-5 flex items-center gap-2">
             <SearchBar value={search} onChange={setSearch} placeholder="제목 검색..." />
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as WorksSort)}
-              className="shrink-0 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 focus:border-zinc-400 focus:outline-none"
+              className="shrink-0 rounded-full border border-transparent bg-zinc-100 px-4 py-2.5 text-sm text-zinc-700 transition-colors focus:border-zinc-300 focus:bg-white focus:outline-none"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt} value={opt}>
@@ -94,13 +115,22 @@ export default function WorksPage() {
 
           {/* Grid */}
           {isEmpty ? (
-            <p className="text-sm text-zinc-500">
-              {isSearchEmpty ? "검색 결과가 없습니다." : "아직 등록된 작업물이 없습니다."}
-            </p>
+            <div className="rounded-3xl border border-dashed border-zinc-200 px-6 py-14 text-center">
+              <p className="text-sm text-zinc-500">
+                {isSearchEmpty ? "검색 결과가 없습니다." : "아직 등록된 작업물이 없습니다."}
+              </p>
+            </div>
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {displayWorks.map((work) => (
-                <WorkCard key={work.id} work={work} isAdmin={isAdmin} />
+              {displayWorks.map((work, index) => (
+                <motion.div
+                  key={work.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: Math.min(index, 8) * 0.05 }}
+                >
+                  <WorkCard work={work} isAdmin={isAdmin} />
+                </motion.div>
               ))}
             </div>
           )}

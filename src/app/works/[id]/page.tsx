@@ -7,21 +7,12 @@ import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WorkModal from "@/components/works/WorkModal";
-import { useWorks, type Work, type WorkFileType } from "@/hooks/useWorks";
+import FileTypeIcon from "@/components/works/FileTypeIcon";
+import { useWorks } from "@/hooks/useWorks";
 import { useAuth } from "@/hooks/useAuth";
 
-const categoryStyles: Record<Work["category"], string> = {
-  수업과제: "bg-blue-50 text-blue-700",
-  개인실습: "bg-amber-50 text-amber-700",
-  팀프로젝트: "bg-purple-50 text-purple-700",
-};
-
-const fileTypeIcon: Record<WorkFileType, string> = {
-  PDF: "📄",
-  PPTX: "📊",
-  DOCX: "📝",
-  기타: "📁",
-};
+const chipClass =
+  "rounded-full bg-white px-2.5 py-1 text-xs font-medium text-zinc-600 ring-1 ring-zinc-200";
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -105,7 +96,7 @@ export default function WorkDetailPage() {
 
           {/* Thumbnail */}
           {work.thumbnailUrl && (
-            <div className="relative mt-6 aspect-video w-full overflow-hidden rounded-xl bg-zinc-100">
+            <div className="relative mt-6 aspect-video w-full overflow-hidden rounded-3xl bg-zinc-100">
               <Image
                 src={work.thumbnailUrl}
                 alt={work.title}
@@ -119,21 +110,15 @@ export default function WorkDetailPage() {
 
           {/* Category + file type badge */}
           <div className="mt-6 flex items-center gap-2">
-            <span
-              className={`rounded-full px-2.5 py-1 text-xs font-medium ${categoryStyles[work.category]}`}
-            >
-              {work.category}
-            </span>
-            <span className="text-sm text-zinc-400">
-              {fileTypeIcon[work.fileType]} {work.fileType}
-            </span>
+            <span className={chipClass}>{work.category}</span>
+            <span className={chipClass}>{work.fileType}</span>
           </div>
 
           {/* Title */}
           <h1 className="mt-3 text-2xl font-bold text-zinc-900">{work.title}</h1>
 
           {/* Date */}
-          <p className="mt-1.5 text-sm text-zinc-500">{work.date}</p>
+          <p className="mt-1.5 text-sm tabular-nums text-zinc-500">{work.date}</p>
 
           {/* Tech tags */}
           {work.techTags.length > 0 && (
@@ -158,16 +143,12 @@ export default function WorkDetailPage() {
 
           {/* File attachment box */}
           {work.fileName && work.linkUrl && (
-            <div className="mt-8 rounded-xl border border-zinc-200 p-5">
-              <p className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-400">
+            <div className="mt-8 rounded-3xl bg-zinc-50 p-6">
+              <p className="mb-4 text-xs font-medium text-zinc-500">
                 첨부 파일
               </p>
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-2xl">
-                  <span role="img" aria-label={work.fileType}>
-                    {fileTypeIcon[work.fileType]}
-                  </span>
-                </div>
+                <FileTypeIcon type={work.fileType} size="lg" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium text-zinc-900">
                     {work.fileName}
@@ -184,7 +165,7 @@ export default function WorkDetailPage() {
                     download={work.fileName}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="shrink-0 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                    className="shrink-0 rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800"
                   >
                     다운로드
                   </a>
@@ -192,14 +173,14 @@ export default function WorkDetailPage() {
                   <button
                     type="button"
                     onClick={() => setDownloadBlocked(true)}
-                    className="shrink-0 rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-500 hover:bg-zinc-50"
+                    className="shrink-0 rounded-full bg-white px-5 py-2 text-sm font-medium text-zinc-500 ring-1 ring-zinc-200 hover:bg-zinc-100"
                   >
                     다운로드
                   </button>
                 )}
               </div>
               {downloadBlocked && (
-                <div className="mt-3 flex items-center justify-between rounded-lg bg-zinc-50 px-4 py-2.5 text-sm text-zinc-600">
+                <div className="mt-3 flex items-center justify-between rounded-2xl bg-white px-4 py-2.5 text-sm text-zinc-600">
                   <span>다운로드 권한이 필요합니다.</span>
                   <button
                     type="button"
@@ -219,7 +200,7 @@ export default function WorkDetailPage() {
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+                className="rounded-full bg-zinc-100 px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-200"
               >
                 수정
               </button>
@@ -227,7 +208,7 @@ export default function WorkDetailPage() {
                 type="button"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="rounded-lg bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
+                className="rounded-full bg-red-50 px-5 py-2 text-sm font-medium text-red-600 hover:bg-red-100 disabled:opacity-50"
               >
                 {isDeleting ? "삭제 중..." : "삭제"}
               </button>

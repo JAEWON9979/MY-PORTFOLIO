@@ -304,7 +304,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
       {...backdropProps}
     >
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-7 shadow-xl">
         <h2 className="mb-4 text-lg font-bold text-zinc-900">
           {initialWork ? "작업물 수정" : "작업물 추가"}
         </h2>
@@ -322,7 +322,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
               onChange={(e) => setTitle(e.target.value)}
               required
               maxLength={100}
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
             />
           </div>
 
@@ -334,7 +334,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as WorkCategory)}
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
             >
               {categoryOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -355,7 +355,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               maxLength={500}
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
             />
           </div>
 
@@ -371,7 +371,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
               onChange={(e) => setTechTagsText(e.target.value)}
               placeholder="Python, Pandas"
               maxLength={200}
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
             />
           </div>
 
@@ -385,7 +385,7 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
             />
           </div>
 
@@ -655,14 +655,14 @@ export default function WorkModal({ initialWork, onClose, onSubmit, submitError 
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100"
+              className="rounded-full px-5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={isUploading || isThumbnailUploading}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
+              className="rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
             >
               저장
             </button>

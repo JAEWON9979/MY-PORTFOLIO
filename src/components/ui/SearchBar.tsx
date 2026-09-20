@@ -21,7 +21,7 @@ export default function SearchBar({
         fill="none"
         stroke="currentColor"
         strokeWidth="1.6"
-        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"
+        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400"
       >
         <circle cx="6.5" cy="6.5" r="4.5" />
         <path strokeLinecap="round" d="M10 10l3 3" />
@@ -33,7 +33,7 @@ export default function SearchBar({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-9 pr-8 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none"
+        className="w-full rounded-full border border-transparent bg-zinc-100 py-2.5 pl-10 pr-9 text-sm text-zinc-900 placeholder:text-zinc-400 transition-colors focus:border-zinc-300 focus:bg-white focus:outline-none"
       />
 
       {/* clear button */}
@@ -42,7 +42,7 @@ export default function SearchBar({
           type="button"
           onClick={() => onChange("")}
           aria-label="검색어 초기화"
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
         >
           <svg
             width="14"
