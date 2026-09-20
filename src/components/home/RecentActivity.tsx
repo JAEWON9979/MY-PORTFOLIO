@@ -11,6 +11,8 @@ import FileTypeIcon from "@/components/works/FileTypeIcon";
 import { usePosts } from "@/hooks/usePosts";
 import { useComments } from "@/hooks/useComments";
 import { useAuth } from "@/hooks/useAuth";
+import { useDdays } from "@/hooks/useDdays";
+import { daysBetween, formatDday, formatMonthDayWeekday, kstToday } from "@/lib/date";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -129,6 +131,48 @@ function GoalCard() {
         </div>
       )}
     </CardShell>
+  );
+}
+
+// ── DdayCard ──────────────────────────────────────────────────────────────────
+
+// 일정에서 "D-DAY로 표시"한 것 중 가장 가까운 3개. 본인 일정이라 비로그인이면 카드 자체를 숨김
+function DdayCard() {
+  const { user, isLoaded: authLoaded } = useAuth();
+  const { ddays, isLoaded } = useDdays(3);
+
+  if (!authLoaded || !user) return null;
+
+  const today = kstToday();
+
+  return (
+    <div className="mb-5">
+      <CardShell title="D-DAY" href="/schedule" delay={0.15}>
+        {!isLoaded ? (
+          <div className="flex h-16 items-center justify-center">
+            <p className="text-xs text-zinc-400">불러오는 중...</p>
+          </div>
+        ) : ddays.length === 0 ? (
+          <div className="flex h-16 items-center justify-center">
+            <p className="text-xs text-zinc-400">
+              일정에서 &quot;D-DAY로 표시&quot;를 체크하면 여기에 나타납니다.
+            </p>
+          </div>
+        ) : (
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {ddays.map((d) => (
+              <li key={d.id} className="rounded-2xl bg-white px-4 py-3">
+                <p className="text-2xl font-bold tracking-tight text-zinc-900 tabular-nums">
+                  {formatDday(daysBetween(d.date, today))}
+                </p>
+                <p className="mt-1 truncate text-sm font-medium text-zinc-900">{d.title}</p>
+                <p className="mt-0.5 text-xs text-zinc-400">{formatMonthDayWeekday(d.date)}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardShell>
+    </div>
   );
 }
 
@@ -267,6 +311,9 @@ export default function RecentActivity() {
         <GoalCard />
         <WorksCard />
       </div>
+
+      {/* D-DAY (로그인한 본인만) */}
+      <DdayCard />
 
       {/* bottom row: community */}
       <CommunityCard />

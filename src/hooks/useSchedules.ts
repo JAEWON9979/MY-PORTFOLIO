@@ -10,6 +10,7 @@ export interface Schedule {
   date: string; // YYYY-MM-DD
   recurrenceId: string | null;
   reminderEnabled: boolean;
+  isDday: boolean; // 홈에 D-DAY로 표시할 일정인지
 }
 
 export type ScheduleInput = Omit<Schedule, "id" | "recurrenceId">;
@@ -33,6 +34,7 @@ interface ScheduleRow {
   date: string;
   recurrence_id: string | null;
   reminder_enabled: boolean;
+  is_dday: boolean;
 }
 
 function fromRow(row: ScheduleRow): Schedule {
@@ -43,6 +45,7 @@ function fromRow(row: ScheduleRow): Schedule {
     date: row.date,
     recurrenceId: row.recurrence_id,
     reminderEnabled: row.reminder_enabled,
+    isDday: row.is_dday,
   };
 }
 
@@ -122,7 +125,7 @@ export function useSchedules(year: number, month: number) {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("schedules")
-      .select("id, title, description, date, recurrence_id, reminder_enabled")
+      .select("id, title, description, date, recurrence_id, reminder_enabled, is_dday")
       .gte("date", start)
       .lte("date", end)
       .order("date", { ascending: true });
@@ -151,8 +154,9 @@ export function useSchedules(year: number, month: number) {
         date: input.date,
         user_id: userId,
         reminder_enabled: input.reminderEnabled,
+        is_dday: input.isDday,
       })
-      .select("id, title, description, date, recurrence_id, reminder_enabled")
+      .select("id, title, description, date, recurrence_id, reminder_enabled, is_dday")
       .single();
     if (error) throw error;
     const newSchedule = fromRow(data as ScheduleRow);
@@ -211,6 +215,7 @@ export function useSchedules(year: number, month: number) {
         description: input.description,
         date: input.date,
         reminder_enabled: input.reminderEnabled,
+        is_dday: input.isDday,
       })
       .eq("id", id);
     if (error) throw error;

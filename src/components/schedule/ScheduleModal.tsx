@@ -25,9 +25,12 @@ export default function ScheduleModal({
   const [reminderEnabled, setReminderEnabled] = useState(
     initialSchedule?.reminderEnabled ?? true
   );
+  const [isDday, setIsDday] = useState(initialSchedule?.isDday ?? false);
 
   const isAddMode = !initialSchedule;
   const [isRecurring, setIsRecurring] = useState(false);
+  // 반복 일정은 D-DAY로 표시하지 않음(같은 제목이 수십 개 생기므로)
+  const ddayDisabled = isAddMode && isRecurring;
   const [frequency, setFrequency] = useState<"daily" | "weekly">("weekly");
   const [interval, setInterval] = useState(1);
   const [weekdays, setWeekdays] = useState<number[]>([]);
@@ -64,7 +67,7 @@ export default function ScheduleModal({
         return;
       }
       onSubmit(
-        { title, description, date, reminderEnabled },
+        { title, description, date, reminderEnabled, isDday: false },
         {
           frequency,
           interval,
@@ -76,7 +79,7 @@ export default function ScheduleModal({
       return;
     }
 
-    onSubmit({ title, description, date, reminderEnabled });
+    onSubmit({ title, description, date, reminderEnabled, isDday });
   };
 
   return (
@@ -142,6 +145,26 @@ export default function ScheduleModal({
               />
               하루 전 이메일 알림 받기
             </label>
+          </div>
+
+          <div>
+            <label
+              className={`flex items-center gap-2 text-sm font-medium ${
+                ddayDisabled ? "text-zinc-400" : "text-zinc-700"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={isDday && !ddayDisabled}
+                disabled={ddayDisabled}
+                onChange={(e) => setIsDday(e.target.checked)}
+                className="h-4 w-4 rounded border-zinc-300"
+              />
+              D-DAY로 표시 (홈에 남은 일수 표시)
+            </label>
+            {ddayDisabled && (
+              <p className="mt-1 pl-6 text-xs text-zinc-400">반복 일정은 D-DAY로 표시할 수 없습니다.</p>
+            )}
           </div>
 
           {isAddMode && (

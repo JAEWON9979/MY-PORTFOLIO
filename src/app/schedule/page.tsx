@@ -14,6 +14,7 @@ import {
 } from "@/hooks/useSchedules";
 import { useScheduleMemo } from "@/hooks/useScheduleMemo";
 import { useAuth } from "@/hooks/useAuth";
+import { daysBetween, formatDday } from "@/lib/date";
 
 // ── calendar helpers ──────────────────────────────────────────────────────────
 
@@ -368,6 +369,17 @@ export default function SchedulePage() {
                             {s.recurrenceId && (
                               <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500">
                                 반복
+                              </span>
+                            )}
+                            {s.isDday && (
+                              <span
+                                className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                                  daysBetween(s.date, today) >= 0
+                                    ? "bg-zinc-900 text-white"
+                                    : "bg-zinc-200 text-zinc-500"
+                                }`}
+                              >
+                                {formatDday(daysBetween(s.date, today))}
                               </span>
                             )}
                           </div>

@@ -17,6 +17,12 @@ export function daysBetween(date: string, base: string): number {
   return Math.round((parseDateUTC(date) - parseDateUTC(base)) / 86_400_000);
 }
 
+// 남은 일수(daysBetween(date, today)) → "D-3" / "D-DAY" / "D+2"
+export function formatDday(diff: number): string {
+  if (diff === 0) return "D-DAY";
+  return diff > 0 ? `D-${diff}` : `D+${-diff}`;
+}
+
 // YYYY-MM-DD → "9/21(월)"
 export function formatMonthDayWeekday(date: string): string {
   const [, m, d] = date.split("-").map(Number);
