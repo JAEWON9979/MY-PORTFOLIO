@@ -68,7 +68,7 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
       {...backdropProps}
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-3xl bg-white p-7 shadow-xl">
         <h2 className="mb-4 text-lg font-bold text-zinc-900">
           {isEdit ? "목표 수정" : "목표 추가"}
         </h2>
@@ -83,7 +83,7 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
               required
               maxLength={100}
               spellCheck={false}
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
             />
           </div>
 
@@ -96,7 +96,7 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
               rows={3}
               maxLength={500}
               spellCheck={false}
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
             />
           </div>
 
@@ -107,7 +107,7 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
               <select
                 value={category}
                 onChange={(e) => handleCategoryChange(e.target.value as GoalCategory)}
-                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
               >
                 {categoryOptions.map((opt) => (
                   <option key={opt} value={opt}>{opt}</option>
@@ -123,7 +123,7 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
                 />
               </div>
             )}
@@ -137,10 +137,10 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
                 <button
                   type="button"
                   onClick={() => setIsRecurring(false)}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
                     !isRecurring
                       ? "bg-zinc-900 text-white"
-                      : "border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                      : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
                   }`}
                 >
                   없음
@@ -148,10 +148,10 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
                 <button
                   type="button"
                   onClick={() => setIsRecurring(true)}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
                     isRecurring
-                      ? "bg-sky-600 text-white"
-                      : "border border-zinc-300 text-zinc-600 hover:bg-zinc-50"
+                      ? "bg-zinc-900 text-white"
+                      : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
                   }`}
                 >
                   반복
@@ -190,13 +190,13 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100"
+              className="rounded-full px-5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100"
             >
               취소
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+              className="rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800"
             >
               저장
             </button>

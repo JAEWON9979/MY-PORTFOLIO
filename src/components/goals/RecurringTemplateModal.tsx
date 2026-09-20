@@ -52,7 +52,7 @@ export default function RecurringTemplateModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
       {...backdropProps}
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-3xl bg-white p-7 shadow-xl">
         <h2 className="mb-4 text-lg font-bold text-zinc-900">반복 목표 수정</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -64,7 +64,7 @@ export default function RecurringTemplateModal({
               onChange={(e) => setTitle(e.target.value)}
               required
               maxLength={100}
-              className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none"
+              className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
             />
           </div>
 
@@ -96,13 +96,13 @@ export default function RecurringTemplateModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100"
+              className="rounded-full px-5 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100"
             >
               취소
             </button>
             <button
               type="submit"
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+              className="rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800"
             >
               저장
             </button>

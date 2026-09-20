@@ -13,7 +13,7 @@ interface CategoryFilterProps {
 
 export default function CategoryFilter({ value, onChange }: CategoryFilterProps) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="inline-flex flex-wrap gap-1 rounded-full bg-zinc-100 p-1">
       {categories.map((category) => {
         const isActive = category === value;
         return (
@@ -21,10 +21,11 @@ export default function CategoryFilter({ value, onChange }: CategoryFilterProps)
             key={category}
             type="button"
             onClick={() => onChange(category)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            aria-pressed={isActive}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
               isActive
-                ? "bg-zinc-900 text-white"
-                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                ? "bg-white text-zinc-900 shadow-sm"
+                : "text-zinc-500 hover:text-zinc-800"
             }`}
           >
             {category}

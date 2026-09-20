@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import GoalRing from "@/components/home/GoalRing";
 import GoalCard from "@/components/goals/GoalCard";
 import GoalModal from "@/components/goals/GoalModal";
 import RecurringTemplateModal from "@/components/goals/RecurringTemplateModal";
@@ -23,18 +25,32 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { daysBetween, formatMonthDayWeekday, kstToday } from "@/lib/date";
 
-interface StatCardProps {
+// 카테고리별 달성 현황 한 줄: 이름 + 개수 + 얇은 진행 막대
+function CategoryBar({
+  label,
+  done,
+  total,
+}: {
   label: string;
-  value: string;
-  sub?: string;
-}
-
-function StatCard({ label, value, sub }: StatCardProps) {
+  done: number;
+  total: number;
+}) {
+  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white px-5 py-4">
-      <p className="text-xs font-medium text-zinc-400">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-zinc-900">{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-zinc-500">{sub}</p>}
+    <div>
+      <div className="mb-1.5 flex items-baseline justify-between text-sm">
+        <span className="font-medium text-zinc-900">{label}</span>
+        <span className="tabular-nums text-zinc-500">
+          {done}
+          <span className="text-zinc-300">/{total}</span>
+        </span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-zinc-200">
+        <div
+          className="h-full rounded-full bg-zinc-900 transition-[width] duration-500"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
     </div>
   );
 }
@@ -202,28 +218,85 @@ export default function GoalsPage() {
       <main className="flex-1">
         <section className="mx-auto max-w-3xl px-6 py-12">
           {/* 헤더 */}
-          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-            <h1 className="text-2xl font-bold text-zinc-900">목표 관리</h1>
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-zinc-900">목표 관리</h1>
+              <p className="mt-1 text-sm text-zinc-500">
+                오늘 · {formatMonthDayWeekday(today)}
+              </p>
+            </div>
             <button
               type="button"
               onClick={openAddModal}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+              className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-800"
             >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                aria-hidden
+              >
+                <path strokeLinecap="round" d="M6 1.5v9M1.5 6h9" />
+              </svg>
               목표 추가
             </button>
           </div>
 
+          {/* 통계: 전체 달성률 링 + 카테고리별 진행 막대 */}
+          {goalsLoaded && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-6 rounded-3xl bg-zinc-50 p-6 sm:p-7"
+            >
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-10">
+                <div className="flex items-center gap-5">
+                  <GoalRing rate={stats.rate} />
+                  <div>
+                    <p className="text-xs font-medium text-zinc-500">전체 달성률</p>
+                    <p className="mt-1 text-2xl font-bold tabular-nums text-zinc-900">
+                      {stats.done}
+                      <span className="text-zinc-300">/{stats.total}</span>
+                    </p>
+                    <p className="mt-0.5 text-xs text-zinc-500">개 달성</p>
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-col gap-4">
+                  <CategoryBar
+                    label="일목표"
+                    done={stats.일목표.done}
+                    total={stats.일목표.total}
+                  />
+                  <CategoryBar
+                    label="주목표"
+                    done={stats.주목표.done}
+                    total={stats.주목표.total}
+                  />
+                  <CategoryBar
+                    label="연목표"
+                    done={stats.연목표.done}
+                    total={stats.연목표.total}
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {/* 반복 중인 일목표 관리 */}
           {templatesLoaded && templates.length > 0 && (
-            <div className="mb-6 rounded-2xl border border-sky-100 bg-sky-50 px-5 py-4">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-sky-600">
+            <div className="mb-8 rounded-3xl bg-zinc-50 px-6 py-5">
+              <p className="mb-3 text-xs font-medium text-zinc-500">
                 반복 중인 일목표
               </p>
               <div className="flex flex-wrap gap-2">
                 {templates.map((tpl) => (
                   <span
                     key={tpl.id}
-                    className="flex items-center gap-1.5 rounded-full border border-sky-200 bg-white px-3 py-1 text-sm text-zinc-700"
+                    className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-sm text-zinc-700 ring-1 ring-zinc-200"
                   >
                     {tpl.title}
                     <button
@@ -269,57 +342,48 @@ export default function GoalsPage() {
             </div>
           )}
 
-          {/* 통계 카드 */}
-          {goalsLoaded && (
-            <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <StatCard
-                label="전체 달성률"
-                value={`${stats.rate}%`}
-                sub={`${stats.done}/${stats.total}개 달성`}
-              />
-              <StatCard
-                label="일목표"
-                value={`${stats.일목표.done}/${stats.일목표.total}`}
-                sub="개 달성"
-              />
-              <StatCard
-                label="주목표"
-                value={`${stats.주목표.done}/${stats.주목표.total}`}
-                sub="개 달성"
-              />
-              <StatCard
-                label="연목표"
-                value={`${stats.연목표.done}/${stats.연목표.total}`}
-                sub="개 달성"
-              />
-            </div>
-          )}
-
           {/* 카테고리 필터 */}
-          <div className="mb-6">
+          <div className="mb-5">
             <CategoryFilter value={filter} onChange={setFilter} />
           </div>
 
           {/* 목표 목록 */}
           {goalsLoaded && filteredGoals.length === 0 ? (
-            <p className="text-sm text-zinc-500">
-              {showUpcomingSection
-                ? "오늘 표시할 목표가 없습니다."
-                : "아직 등록된 목표가 없습니다. 목표를 추가해보세요."}
-            </p>
+            <div className="rounded-3xl border border-dashed border-zinc-200 px-6 py-14 text-center">
+              <p className="text-sm text-zinc-500">
+                {showUpcomingSection
+                  ? "오늘 표시할 목표가 없습니다."
+                  : "아직 등록된 목표가 없습니다. 목표를 추가해보세요."}
+              </p>
+              {!showUpcomingSection && (
+                <button
+                  type="button"
+                  onClick={openAddModal}
+                  className="mt-4 rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                >
+                  목표 추가
+                </button>
+              )}
+            </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              {filteredGoals.map((goal) => (
-                <GoalCard
+            <div className="flex flex-col gap-2.5">
+              {filteredGoals.map((goal, index) => (
+                <motion.div
                   key={goal.id}
-                  goal={goal}
-                  onToggle={() => toggleComplete(goal.id)}
-                  onEdit={() => {
-                    setEditingGoal(goal);
-                    setIsModalOpen(true);
-                  }}
-                  onDelete={() => deleteGoal(goal.id)}
-                />
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: Math.min(index, 8) * 0.04 }}
+                >
+                  <GoalCard
+                    goal={goal}
+                    onToggle={() => toggleComplete(goal.id)}
+                    onEdit={() => {
+                      setEditingGoal(goal);
+                      setIsModalOpen(true);
+                    }}
+                    onDelete={() => deleteGoal(goal.id)}
+                  />
+                </motion.div>
               ))}
             </div>
           )}
@@ -357,7 +421,7 @@ export default function GoalsPage() {
                         <p className="mb-1.5 text-xs font-semibold text-zinc-400">
                           {diff === 1 ? `내일 · ${dateLabel}` : dateLabel}
                         </p>
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2.5">
                           {group.goals.map((goal) => (
                             <GoalCard
                               key={goal.id}

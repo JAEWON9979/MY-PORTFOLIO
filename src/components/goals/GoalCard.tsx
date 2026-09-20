@@ -11,11 +11,8 @@ interface GoalRowProps {
   upcomingLabel?: string;
 }
 
-const categoryStyles: Record<Goal["category"], string> = {
-  일목표: "bg-sky-50 text-sky-700",
-  주목표: "bg-violet-50 text-violet-700",
-  연목표: "bg-amber-50 text-amber-700",
-};
+const chipClass =
+  "rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-600 ring-1 ring-zinc-200";
 
 export default function GoalCard({
   goal,
@@ -28,8 +25,10 @@ export default function GoalCard({
 
   return (
     <div
-      className={`flex items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 transition-shadow hover:shadow-sm ${
-        isUpcoming ? "bg-zinc-50" : "bg-white"
+      className={`group flex items-center gap-4 rounded-2xl px-5 py-4 transition-colors ${
+        isUpcoming
+          ? "bg-zinc-50/60 ring-1 ring-inset ring-zinc-100"
+          : "bg-zinc-50 hover:bg-zinc-100/70"
       }`}
     >
       {/* Toggle circle */}
@@ -39,22 +38,22 @@ export default function GoalCard({
         disabled={isUpcoming}
         aria-label={goal.isCompleted ? "미달성으로 변경" : "달성으로 변경"}
         title={isUpcoming ? "예정된 목표는 그날이 되면 체크할 수 있어요" : undefined}
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors ${
           goal.isCompleted
             ? "border-zinc-900 bg-zinc-900 text-white"
             : isUpcoming
               ? "cursor-not-allowed border-dashed border-zinc-300"
-              : "border-zinc-300 hover:border-zinc-600"
+              : "border-zinc-300 bg-white hover:border-zinc-900"
         }`}
       >
         {goal.isCompleted && (
           <svg
-            width="10"
-            height="10"
+            width="11"
+            height="11"
             viewBox="0 0 10 10"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="1.8"
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M1.5 5l2.5 2.5 4.5-4.5" />
           </svg>
@@ -63,11 +62,11 @@ export default function GoalCard({
 
       {/* Title */}
       <p
-        className={`flex-1 truncate text-sm font-medium ${
+        className={`min-w-0 flex-1 truncate text-[15px] font-medium ${
           goal.isCompleted
             ? "text-zinc-400 line-through"
             : isUpcoming
-              ? "text-zinc-600"
+              ? "text-zinc-500"
               : "text-zinc-900"
         }`}
       >
@@ -76,47 +75,58 @@ export default function GoalCard({
 
       {/* Category + recurring + deadline (hidden on very small screens) */}
       <div className="hidden shrink-0 items-center gap-2 sm:flex">
-        <span
-          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryStyles[goal.category]}`}
-        >
-          {goal.category}
-        </span>
-        {goal.recurringTemplateId !== null && (
-          <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-700">
-            반복
-          </span>
-        )}
-        <span className="text-xs text-zinc-400">
+        <span className={chipClass}>{goal.category}</span>
+        {goal.recurringTemplateId !== null && <span className={chipClass}>↻ 반복</span>}
+        <span className="min-w-[4.5rem] text-right text-xs tabular-nums text-zinc-400">
           {isUpcoming ? upcomingLabel : `~${goal.deadline}`}
         </span>
       </div>
 
-      {/* Status pill */}
-      <span
-        className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
-          goal.isCompleted
-            ? "bg-emerald-50 text-emerald-700"
-            : "bg-zinc-100 text-zinc-500"
-        }`}
-      >
-        {goal.isCompleted ? "달성" : isUpcoming ? "예정" : "미달성"}
-      </span>
-
-      {/* Actions */}
-      <div className="flex shrink-0 gap-1">
+      {/* Actions: 데스크톱에선 hover/포커스 때만 보이고, 터치 화면에선 항상 보임 */}
+      <div className="flex shrink-0 gap-0.5 sm:opacity-0 sm:transition-opacity sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
         <button
           type="button"
           onClick={onEdit}
-          className="rounded px-1.5 py-1 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+          aria-label="수정"
+          title="수정"
+          className="rounded-lg p-1.5 text-zinc-400 hover:bg-white hover:text-zinc-800"
         >
-          수정
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M11.3 2.3a1.5 1.5 0 0 1 2.1 2.1l-7.6 7.6-2.6.6.6-2.6 7.5-7.7z"
+            />
+          </svg>
         </button>
         <button
           type="button"
           onClick={onDelete}
-          className="rounded px-1.5 py-1 text-xs text-zinc-400 hover:bg-red-50 hover:text-red-600"
+          aria-label="삭제"
+          title="삭제"
+          className="rounded-lg p-1.5 text-zinc-400 hover:bg-white hover:text-red-600"
         >
-          삭제
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M2.5 4h11M6 4V2.8c0-.4.3-.8.8-.8h2.4c.5 0 .8.4.8.8V4M4 4l.6 8.4c0 .9.7 1.6 1.6 1.6h3.6c.9 0 1.6-.7 1.6-1.6L12 4"
+            />
+          </svg>
         </button>
       </div>
     </div>
