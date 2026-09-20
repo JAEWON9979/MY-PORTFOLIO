@@ -77,6 +77,7 @@ function extractCommunityFilePath(url: string): string | null {
 export function usePosts() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
 
   const refresh = useCallback(async () => {
     const supabase = createClient();
@@ -200,23 +201,37 @@ export function usePosts() {
     [posts]
   );
 
-  const incrementLikeCount = useCallback(
-    async (id: string) => {
-      const target = posts.find((post) => post.id === id);
-      if (!target) return;
-      const supabase = createClient();
-      const { error } = await supabase.rpc("increment_post_like", {
-        _post_id: id,
-      });
-      if (error) return;
-      setPosts((prev) =>
-        prev.map((post) =>
-          post.id === id ? { ...post, likeCount: post.likeCount + 1 } : post
-        )
-      );
-    },
-    [posts]
-  );
+  // 내가 좋아요 누른 글 목록(RLS로 본인 것만 조회됨). 비로그인이면 빈 목록.
+  const refreshLikes = useCallback(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase.from("post_likes").select("post_id");
+    if (!error && data) {
+      setLikedPostIds(new Set(data.map((row) => row.post_id as string)));
+    }
+  }, []);
+
+  // 좋아요 토글: 이미 눌렀으면 취소, 아니면 추가. 서버가 돌려준 최종 상태를 화면에 반영.
+  const toggleLike = useCallback(async (id: string) => {
+    const supabase = createClient();
+    const { data, error } = await supabase.rpc("toggle_post_like", {
+      _post_id: id,
+    });
+    if (error) throw error;
+    const liked = data === true;
+    setLikedPostIds((prev) => {
+      const next = new Set(prev);
+      if (liked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === id
+          ? { ...post, likeCount: Math.max(post.likeCount + (liked ? 1 : -1), 0) }
+          : post
+      )
+    );
+  }, []);
 
   const getPostById = useCallback(
     (id: string) => posts.find((post) => post.id === id),
@@ -248,7 +263,9 @@ export function usePosts() {
     updatePost,
     deletePost,
     incrementViewCount,
-    incrementLikeCount,
+    likedPostIds,
+    refreshLikes,
+    toggleLike,
     getPostById,
     toggleHidden,
   };

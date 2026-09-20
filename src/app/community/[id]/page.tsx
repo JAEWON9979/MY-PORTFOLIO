@@ -64,7 +64,9 @@ export default function CommunityPostPage() {
     updatePost,
     deletePost,
     incrementViewCount,
-    incrementLikeCount,
+    likedPostIds,
+    refreshLikes,
+    toggleLike,
     toggleHidden,
   } = usePosts();
   const { getCommentsByPostId, addComment, deleteComment } = useComments();
@@ -86,8 +88,11 @@ export default function CommunityPostPage() {
   const [commentContent, setCommentContent] = useState("");
   const [commentError, setCommentError] = useState("");
   const hasCountedView = useRef(false);
+  const [isLiking, setIsLiking] = useState(false);
 
   const post = getPostById(params.id);
+  const isLiked = likedPostIds.has(params.id);
+  const userId = user?.id;
   const comments = getCommentsByPostId(params.id);
   const isOwner = !!post && !!user && post.userId === user.id;
   const canSeePost = !post?.isHidden || isAdmin;
@@ -98,6 +103,26 @@ export default function CommunityPostPage() {
       incrementViewCount(post.id);
     }
   }, [post, incrementViewCount]);
+
+  useEffect(() => {
+    if (userId) refreshLikes();
+  }, [userId, refreshLikes]);
+
+  const handleToggleLike = async () => {
+    if (!post || isLiking) return;
+    if (!user) {
+      alert("좋아요는 로그인 후 이용할 수 있습니다.");
+      return;
+    }
+    setIsLiking(true);
+    try {
+      await toggleLike(post.id);
+    } catch {
+      alert("좋아요 처리에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setIsLiking(false);
+    }
+  };
 
   const startEditing = () => {
     if (!post) return;
@@ -540,10 +565,16 @@ export default function CommunityPostPage() {
                   <div className="mt-6 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => incrementLikeCount(post.id)}
-                      className="rounded-lg bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-200"
+                      onClick={handleToggleLike}
+                      disabled={isLiking}
+                      aria-pressed={isLiked}
+                      className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 ${
+                        isLiked
+                          ? "bg-zinc-900 text-white hover:bg-zinc-800"
+                          : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                      }`}
                     >
-                      좋아요
+                      {isLiked ? "♥ 좋아요 취소" : "♡ 좋아요"}
                     </button>
                     {isOwner && (
                       <>
