@@ -6,7 +6,8 @@
 -- ============================================================
 -- Portfolio — complete schema (single-file setup)
 -- Run once on a fresh Supabase project.
--- Admin: sign up at /auth/register with admin@naver.com
+-- Admin: (옛 방식) admin@naver.com 가입 시 자동 승격 — 0016에서 제거됨.
+--        새 프로젝트의 첫 관리자는 가입 후 SQL로 직접 승격할 것(0016 주석 참고).
 -- ============================================================
 
 create extension if not exists pgcrypto;
