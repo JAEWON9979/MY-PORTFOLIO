@@ -46,6 +46,8 @@ export default function AdminUsersPage() {
     if (profile.id === user?.id || togglingId) return;
     const newRole: "admin" | "user" =
       profile.role === "admin" ? "user" : "admin";
+    const target = profile.email ?? profile.username ?? "이 계정";
+    if (!confirm(`${target}의 권한을 ${newRole}(으)로 변경하시겠습니까?`)) return;
     setTogglingId(profile.id);
     const supabase = createClient();
     const { error } = await supabase
