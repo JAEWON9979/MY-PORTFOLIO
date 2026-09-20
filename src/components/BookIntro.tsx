@@ -31,41 +31,51 @@ function getSeen(): boolean {
   }
 }
 
-// 오른쪽 아래 모서리가 말려 올라간 종이. 100×100 좌표계에서 (100,100)이 표지의 꼭짓점.
-// 곡선 오른쪽 아래가 말려 넘어온 뒷면이고, 곡선 바로 왼쪽에 옅은 그림자가 진다.
-const CURL_EDGE = "M100 8 C84 22 66 42 64 62 C63 80 56 92 46 100";
-const CURL_FLAP = `${CURL_EDGE} L100 100 Z`;
+// 오른쪽 아래 모서리가 말려 올라간 종이. 100×140 좌표계에서 (100,140)이 표지의 꼭짓점.
+// CURL_EDGE는 오른쪽 위에서 시작해 왼쪽의 뾰족한 끝(꼭짓점)을 돌아 아래로 내려오는 말림 윤곽이고,
+// 그 오른쪽(CURL_WEDGE)은 종이가 벗겨져 아래가 비쳐 보이는 자리.
+const CURL_EDGE = "M98 4 C76 10 44 26 26 52 C32 70 44 100 66 140";
+const CURL_WEDGE = `${CURL_EDGE} L100 140 L100 4 Z`;
+const CURL_OUTSIDE = `M-60 -60 H160 V200 H-60 Z ${CURL_WEDGE}`;
 
 function CurledCorner() {
   return (
     <svg
-      viewBox="0 0 100 100"
+      viewBox="0 0 100 140"
       aria-hidden="true"
       className="pointer-events-none absolute bottom-0 right-0 overflow-visible"
-      style={{ width: "clamp(96px, 17vw, 200px)", height: "clamp(96px, 17vw, 200px)" }}
+      style={{ width: "clamp(130px, 22vw, 290px)", aspectRatio: "100 / 140" }}
     >
       <defs>
-        <linearGradient id="curl-back" x1="58" y1="44" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#dcdce0" />
-          <stop offset="0.14" stopColor="#ffffff" />
-          <stop offset="0.6" stopColor="#f5f5f6" />
-          <stop offset="1" stopColor="#c9c9ce" />
+        {/* 벗겨져 드러난 자리의 음영: 말림 윤곽 가까이가 짙고 모서리 쪽으로 옅어짐 */}
+        <linearGradient id="curl-revealed" x1="30" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#000000" stopOpacity="0.08" />
+          <stop offset="1" stopColor="#000000" stopOpacity="0.02" />
         </linearGradient>
+        <clipPath id="curl-wedge">
+          <path d={CURL_WEDGE} />
+        </clipPath>
+        <clipPath id="curl-outside">
+          <path d={CURL_OUTSIDE} clipRule="evenodd" />
+        </clipPath>
         <filter id="curl-blur" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="3.2" />
+          <feGaussianBlur stdDeviation="3" />
         </filter>
       </defs>
-      {/* 곡선 왼쪽으로 번지는 그림자 */}
-      <path
-        d={CURL_FLAP}
-        transform="translate(-3 -2)"
-        fill="#000000"
-        fillOpacity="0.3"
-        filter="url(#curl-blur)"
-      />
-      {/* 말려 넘어온 뒷면 */}
-      <path d={CURL_FLAP} fill="url(#curl-back)" />
-      <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.1" strokeWidth="0.5" />
+      {/* 벗겨져 드러난 자리 */}
+      <path d={CURL_WEDGE} fill="url(#curl-revealed)" />
+      {/* 말린 종이가 드러난 자리에 드리우는 그림자 */}
+      <g clipPath="url(#curl-wedge)">
+        <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.16" strokeWidth="6" filter="url(#curl-blur)" />
+      </g>
+      {/* 말린 종이 바깥쪽의 둥근 음영 */}
+      <g clipPath="url(#curl-outside)">
+        <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.08" strokeWidth="8" filter="url(#curl-blur)" />
+      </g>
+      {/* 표지 아래쪽에 깔리는 옅은 그림자 */}
+      <ellipse cx="36" cy="146" rx="46" ry="11" fill="#000000" fillOpacity="0.07" filter="url(#curl-blur)" />
+      {/* 말림 윤곽선 */}
+      <path d={CURL_EDGE} fill="none" stroke="#000000" strokeOpacity="0.14" strokeWidth="0.45" />
     </svg>
   );
 }
