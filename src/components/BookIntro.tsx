@@ -11,7 +11,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { BOOK_INTRO_KEY } from "@/lib/bookIntro";
 
-// 홈 입장 인트로: 진한 표지가 화면 전체를 덮고, 오른쪽 가장자리에만 겹겹이 쌓인 종이 단면이 보인다.
+// 홈 입장 인트로: 밝은 단색 표지가 화면 전체를 덮고, 오른쪽 가장자리에만 촘촘히 쌓인 종이 단면이 보인다.
 // 클릭하면 표지가 왼쪽 책등을 축으로 넘어가고, 그 아래 종이들이 연달아 넘어가며 홈이 드러난다.
 // - 클릭(또는 아무 키)로 열림, 아무것도 안 하면 AUTO_OPEN_MS 뒤 저절로 열림 → 방문자가 갇히지 않음
 // - 세션당 1번만(sessionStorage), "동작 줄이기" 사용자는 생략, Esc로 즉시 건너뜀
@@ -20,10 +20,13 @@ import { BOOK_INTRO_KEY } from "@/lib/bookIntro";
 
 const AUTO_OPEN_MS = 6000; // 클릭이 없을 때 저절로 열리기까지
 const COVER_SECONDS = 0.9; // 표지가 넘어가는 시간
-const SHEET_SECONDS = 0.8; // 종이 한 장이 넘어가는 시간
-const SHEET_STAGGER = 0.07; // 종이가 연달아 넘어가는 간격
-const SHEET_COUNT = 4; // 오른쪽 가장자리에 보이는 종이 수
-const OPEN_MS = 1150; // 열림이 끝나 인트로를 치우는 시점
+const SHEET_SECONDS = 0.7; // 종이 한 장이 넘어가는 시간
+const SHEET_STAGGER = 0.045; // 종이가 연달아 넘어가는 간격
+const SHEET_COUNT = 9; // 오른쪽 가장자리에 보이는 종이 수
+const OPEN_MS = 1250; // 열림이 끝나 인트로를 치우는 시점
+
+// 종이 블록 위아래로 보이는 뒷표지 띠의 높이(px): 장마다 조금씩 어긋나 손으로 쌓은 페이지처럼 보인다
+const BAND_HEIGHTS = [7, 5, 8, 6, 7, 5, 8, 6, 7];
 
 type Phase = "idle" | "opening" | "done";
 
@@ -35,14 +38,6 @@ function getSeen(): boolean {
     return false;
   }
 }
-
-// 표지 제목용 시스템 세리프 서체 (웹폰트를 내려받지 않음)
-const SERIF =
-  '"Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif';
-
-// 천 표지의 결: 흰 노이즈를 overlay로 아주 옅게 깐다 (SVG data URI, 이미지 파일 없음)
-const CLOTH_TEXTURE =
-  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")";
 
 const OPEN_EASE: [number, number, number, number] = [0.7, 0, 0.2, 1];
 
@@ -124,7 +119,7 @@ export default function BookIntro() {
               // 원근감이 화면 너비에 비례해야 넓은 화면에서도 서서히 열려 보임
               perspective: "max(2200px, 350vw)",
               // 오른쪽에 보이는 종이 단면 띠의 너비
-              "--edge": "clamp(10px, 1.6vw, 24px)",
+              "--edge": "clamp(28px, 3.2vw, 44px)",
             } as CSSProperties
           }
           exit={{ opacity: 0, transition: { duration: 0.2 } }}
@@ -143,26 +138,28 @@ export default function BookIntro() {
           {/* 표지·종이가 넘어가며 드러나는 홈 위에 드리우는 그림자 (열리는 동안 옅어짐) */}
           <motion.div
             aria-hidden
-            className="absolute inset-0 bg-gradient-to-r from-black/35 via-black/8 to-transparent"
+            className="absolute inset-0 bg-gradient-to-r from-black/20 via-black/5 to-transparent"
             initial={{ opacity: 1 }}
             animate={{ opacity: opening ? 0 : 1 }}
             transition={{ duration: COVER_SECONDS, ease: "easeOut" }}
           />
 
-          {/* 종이 단면: 표지 오른쪽 끝 바깥으로 겹겹이 보이는 종이들. 열리면 표지 뒤를 이어 연달아 넘어감 */}
+          {/* 종이 단면: 표지 오른쪽 끝 바깥으로 촘촘히 겹쳐 보이는 종이들. 열리면 표지 뒤를 이어 연달아 넘어감 */}
           {Array.from({ length: SHEET_COUNT }, (_, i) => SHEET_COUNT - 1 - i).map((i) => (
             <motion.div
               key={i}
               aria-hidden
-              className="absolute left-0 top-0 h-full bg-white"
+              className="absolute left-0 top-0 h-full"
               style={{
                 // i가 작을수록 표지에 가까운(위쪽) 종이 → 오른쪽 끝이 표지에 가깝다
                 width: `calc(100% - var(--edge) * ${1 - (i + 1) / SHEET_COUNT})`,
                 transformOrigin: "left center",
-                borderRight: "1px solid #d4d4d8",
+                // 종이를 한 장씩 번갈아 살짝 다른 흰색으로, 표지 쪽일수록 그림자를 더 받게
+                backgroundColor: i % 2 === 0 ? "#ffffff" : "#ececee",
                 backgroundImage:
-                  "linear-gradient(to right, rgba(0,0,0,0.06), rgba(0,0,0,0) 6%)",
-                boxShadow: "6px 0 18px rgba(0,0,0,0.10)",
+                  "linear-gradient(to right, rgba(0,0,0,0.05), rgba(0,0,0,0) 6%)",
+                borderRight: "1px solid #b4b4ba",
+                boxShadow: "6px 0 18px rgba(0,0,0,0.08)",
               }}
               initial={{ rotateY: 0 }}
               animate={{ rotateY: opening ? -180 : 0 }}
@@ -174,6 +171,28 @@ export default function BookIntro() {
             />
           ))}
 
+          {/* 종이 블록 위아래의 뒷표지 띠: 종이가 표지보다 살짝 안쪽에서 끝나는 모습 (열리기 시작하면 사라짐) */}
+          {BAND_HEIGHTS.map((height, i) => {
+            const bandStyle: CSSProperties = {
+              left: `calc(100% - var(--edge) * ${1 - i / SHEET_COUNT})`,
+              width: `calc(var(--edge) / ${SHEET_COUNT} + 0.5px)`,
+              height,
+              backgroundColor: "#a1a1aa",
+            };
+            return (
+              <motion.div
+                key={`band-${i}`}
+                aria-hidden
+                initial={{ opacity: 1 }}
+                animate={{ opacity: opening ? 0 : 1 }}
+                transition={{ duration: 0.25 }}
+              >
+                <div className="absolute top-0" style={bandStyle} />
+                <div className="absolute bottom-0" style={bandStyle} />
+              </motion.div>
+            );
+          })}
+
           {/* 표지: 화면 전체(오른쪽 띠만 제외)를 덮고, 왼쪽 책등을 축으로 넘어감 */}
           <motion.div
             className="absolute left-0 top-0 h-full"
@@ -181,7 +200,7 @@ export default function BookIntro() {
               width: "calc(100% - var(--edge))",
               transformOrigin: "left center",
               transformStyle: "preserve-3d",
-              boxShadow: "6px 0 14px rgba(0,0,0,0.28)",
+              boxShadow: "6px 0 14px rgba(0,0,0,0.18)",
             }}
             initial={{ rotateY: 0 }}
             animate={{ rotateY: opening ? -180 : hover ? -3.5 : 0 }}
@@ -190,78 +209,33 @@ export default function BookIntro() {
               ease: opening ? OPEN_EASE : "easeOut",
             }}
           >
-            {/* 바깥면: 천 표지 느낌의 책 — 작은 은박 세리프 제목 하나와 장식선만 둔다 */}
+            {/* 바깥면: 밝은 단색 + 왼쪽 위 두 줄 글 */}
             <div
-              className="absolute inset-0 overflow-hidden"
-              style={{
-                backfaceVisibility: "hidden",
-                background:
-                  "radial-gradient(130% 100% at 78% 0%, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 55%), linear-gradient(165deg, #1d1d20 0%, #111113 60%, #0a0a0c 100%)",
-              }}
+              className="absolute inset-0 bg-zinc-100"
+              style={{ backfaceVisibility: "hidden" }}
             >
-              {/* 천 표지의 미세한 결 */}
-              <div
-                className="pointer-events-none absolute inset-0 opacity-[0.16] mix-blend-overlay"
-                style={{ backgroundImage: CLOTH_TEXTURE, backgroundSize: "160px 160px" }}
-              />
-              {/* 위아래로 살짝 깊어지는 음영 */}
-              <div
-                className="pointer-events-none absolute inset-0"
+              {/* 책등: 표지가 넘어갈 때 축이 어색하지 않을 정도의 옅은 그림자만 */}
+              <div className="pointer-events-none absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/10 to-transparent" />
+
+              <motion.p
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="absolute font-semibold leading-[1.12] tracking-tight text-zinc-900"
                 style={{
-                  background:
-                    "linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 12%, rgba(0,0,0,0) 72%, rgba(0,0,0,0.32) 100%)",
+                  left: "max(2rem, 6vw)",
+                  top: "max(2rem, 8vh)",
+                  fontSize: "clamp(28px, 4vw, 48px)",
                 }}
-              />
-              {/* 은은한 빛 결 */}
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.03) 50%, transparent 62%)",
-                }}
-              />
-
-              {/* 책등 그림자 + 표지가 꺾이는 홈(어두운 선 + 밝은 선) */}
-              <div className="pointer-events-none absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-black/60 to-transparent" />
-              <div className="pointer-events-none absolute inset-y-0 left-[26px] w-px bg-black/60" />
-              <div className="pointer-events-none absolute inset-y-0 left-[27px] w-px bg-white/[0.09]" />
-
-              {/* 제목 + 장식선 */}
-              <div className="absolute inset-x-0 top-[34%] flex flex-col items-center px-6 text-center">
-                <motion.p
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.9, delay: 0.15 }}
-                  className="text-[13px] uppercase tracking-[0.4em] sm:text-[15px]"
-                  style={{
-                    fontFamily: SERIF,
-                    // 은박 스탬프처럼 위에서 아래로 살짝 어두워지는 금속 질감
-                    backgroundImage: "linear-gradient(180deg, #fafafa 0%, #a1a1aa 100%)",
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    color: "transparent",
-                    filter: "drop-shadow(0 1px 0 rgba(0,0,0,0.65))",
-                  }}
-                >
-                  Portfolio of Jaewon
-                </motion.p>
-
-                <motion.div
-                  initial={{ opacity: 0, scaleX: 0.4 }}
-                  animate={{ opacity: 1, scaleX: 1 }}
-                  transition={{ duration: 0.9, delay: 0.35 }}
-                  className="mt-6 flex items-center gap-3 text-zinc-500"
-                  aria-hidden
-                >
-                  <span className="h-px w-10 bg-gradient-to-r from-transparent to-zinc-500/70" />
-                  <span className="h-1 w-1 rotate-45 bg-zinc-400/80" />
-                  <span className="h-px w-10 bg-gradient-to-l from-transparent to-zinc-500/70" />
-                </motion.div>
-              </div>
+              >
+                Jaewon&apos;s
+                <br />
+                Portfolio
+              </motion.p>
             </div>
             {/* 안쪽면 */}
             <div
-              className="absolute inset-0 bg-zinc-100"
+              className="absolute inset-0 bg-zinc-200"
               style={{ transform: "rotateY(180deg)", backfaceVisibility: "hidden" }}
             />
           </motion.div>
