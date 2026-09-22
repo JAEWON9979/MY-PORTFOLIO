@@ -83,6 +83,7 @@ function GoalCard() {
       rate,
       일목표: catCount(goals, "일목표"),
       주목표: catCount(goals, "주목표"),
+      월목표: catCount(goals, "월목표"),
       연목표: catCount(goals, "연목표"),
     };
   }, [goals]);
@@ -124,7 +125,7 @@ function GoalCard() {
         <div className="flex items-center gap-5">
           <GoalRing rate={stats.rate} />
           <div className="flex flex-1 flex-col gap-2">
-            {(["일목표", "주목표", "연목표"] as GoalCategory[]).map((cat) => (
+            {(["일목표", "주목표", "월목표", "연목표"] as GoalCategory[]).map((cat) => (
               <CatRow key={cat} cat={cat} />
             ))}
           </div>

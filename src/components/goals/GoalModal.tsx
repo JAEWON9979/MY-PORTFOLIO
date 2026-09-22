@@ -3,8 +3,17 @@
 import { useEffect, useState } from "react";
 import type { Goal, GoalCategory, GoalInput } from "@/hooks/useGoals";
 import { useBackdropClose } from "@/hooks/useBackdropClose";
+import { kstEndOfMonth, kstEndOfYear, kstToday } from "@/lib/date";
 
-const categoryOptions: GoalCategory[] = ["일목표", "주목표", "연목표"];
+const categoryOptions: GoalCategory[] = ["일목표", "주목표", "월목표", "연목표"];
+
+// 카테고리별 기본 마감일: 일목표=오늘, 월목표=이번달 말일, 연목표=올해 말일. 주목표는 기본값 없음(직접 입력).
+function getDefaultDeadline(category: GoalCategory): string {
+  if (category === "일목표") return kstToday();
+  if (category === "월목표") return kstEndOfMonth();
+  if (category === "연목표") return kstEndOfYear();
+  return "";
+}
 const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 const ALL_WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
 
@@ -22,7 +31,9 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
   const [category, setCategory] = useState<GoalCategory>(
     initialGoal?.category ?? "일목표"
   );
-  const [deadline, setDeadline] = useState(initialGoal?.deadline ?? "");
+  const [deadline, setDeadline] = useState(
+    initialGoal?.deadline ?? getDefaultDeadline("일목표")
+  );
   const [isRecurring, setIsRecurring] = useState(false); // 새 목표 추가 시에만
   const [weekdays, setWeekdays] = useState<number[]>(ALL_WEEKDAYS);
   const [weekdayError, setWeekdayError] = useState("");
@@ -37,6 +48,8 @@ export default function GoalModal({ initialGoal, onClose, onSubmit }: GoalModalP
   const handleCategoryChange = (cat: GoalCategory) => {
     setCategory(cat);
     if (cat !== "일목표") setIsRecurring(false);
+    // 수정 시에는 기존 마감일을 유지, 새 목표는 카테고리별 기본값으로 자동 설정(직접 수정 가능)
+    if (!isEdit) setDeadline(getDefaultDeadline(cat));
   };
 
   useEffect(() => {

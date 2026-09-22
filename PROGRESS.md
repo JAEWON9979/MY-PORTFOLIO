@@ -2,6 +2,15 @@
 
 완료된 작업과 그 결정 배경을 시간순으로 기록합니다. 최신 항목을 맨 위에 추가하세요.
 
+## 2026-09-22
+- 목표(goals) 카테고리별 마감일 기본값 + 월목표 카테고리 추가: 사용자가 "일목표는 오늘, 연목표는 올해 말일로 마감일 기본 설정, 월목표 카테고리 추가"를 요청
+  - `src/lib/date.ts`에 `kstEndOfMonth()`, `kstEndOfYear()` 추가(KST 기준)
+  - `GoalModal.tsx`: 새 목표 추가 시 카테고리 선택에 따라 마감일 자동 채움(일목표=오늘, 월목표=이번달 말일, 연목표=올해 12/31, 주목표는 기존처럼 기본값 없음). 이후 직접 수정은 그대로 가능. 수정(edit) 모드에서는 기존 마감일 유지, 자동 덮어쓰기 안 함
+  - `GoalCategory` 타입("일목표"|"주목표"|"연목표")에 "월목표" 추가하고, 카테고리 선택지·필터(`CategoryFilter.tsx`)·목표 페이지 통계·진행바(`goals/page.tsx`)·홈 대시보드 카드(`RecentActivity.tsx`)에 반영
+  - DB: `supabase/migrations/0018_goals_monthly_category.sql` — `goals.category` 체크 제약(`goals_category_check`)에 `월목표` 추가
+  - 운영 DB 적용(사용자가 "직접 적용해"라고 지시): `supabase db query`가 여러 SQL 문을 한 번에 실행하지 못해(prepared statement 제약), `drop constraint ... , add constraint ...`를 하나의 `alter table` 문으로 합쳐 실행. 적용 전/후 `pg_constraint`로 제약 내용 확인(적용 전 `일목표/주목표/연목표` 3개 → 적용 후 `월목표` 포함 4개)
+  - lint·build 통과
+
 ## 2026-09-21
 - TODO 정리: 사용자가 [확인 필요] 항목 3개(D-DAY 기능 배포 후 확인, 홈 인트로 배포 후 확인, 0013 화면 확인)를 TODO에서 지우라고 해서 삭제하고, 그때까지의 변경(D-DAY 기능 + 0017 운영 적용 + 인트로 최종본)을 한꺼번에 push. 세 항목의 확인 결과는 대화에서 따로 보고받지 않았으므로, 이상이 있으면 새 TODO로 다시 올릴 것
 - D-DAY 기능 추가(0017은 운영 DB에 적용 완료, 코드는 push 전): 사용자가 "D-DAY 기능만 추가하자"고 해서 방식·위치를 물었고, "일정에서 골라 표시" + "홈 최근 활동에 표시"를 선택

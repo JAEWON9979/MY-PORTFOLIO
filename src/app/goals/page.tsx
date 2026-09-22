@@ -98,8 +98,9 @@ export default function GoalsPage() {
       (g) => g.category === "일목표" && g.deadline === today
     );
     const juk = goals.filter((g) => g.category === "주목표");
+    const wol = goals.filter((g) => g.category === "월목표");
     const yeon = goals.filter((g) => g.category === "연목표");
-    const counted = [...todayIl, ...juk, ...yeon];
+    const counted = [...todayIl, ...juk, ...wol, ...yeon];
     const total = counted.length;
     const done = counted.filter((g) => g.isCompleted).length;
     const rate = total === 0 ? 0 : Math.round((done / total) * 100);
@@ -109,6 +110,7 @@ export default function GoalsPage() {
       done,
       일목표: { done: todayIl.filter((g) => g.isCompleted).length, total: todayIl.length },
       주목표: { done: juk.filter((g) => g.isCompleted).length, total: juk.length },
+      월목표: { done: wol.filter((g) => g.isCompleted).length, total: wol.length },
       연목표: { done: yeon.filter((g) => g.isCompleted).length, total: yeon.length },
     };
   }, [goals, today]);
@@ -275,6 +277,11 @@ export default function GoalsPage() {
                     label="주목표"
                     done={stats.주목표.done}
                     total={stats.주목표.total}
+                  />
+                  <CategoryBar
+                    label="월목표"
+                    done={stats.월목표.done}
+                    total={stats.월목표.total}
                   />
                   <CategoryBar
                     label="연목표"

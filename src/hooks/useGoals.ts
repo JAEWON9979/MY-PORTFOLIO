@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { kstToday } from "@/lib/date";
 
-export type GoalCategory = "일목표" | "주목표" | "연목표";
+export type GoalCategory = "일목표" | "주목표" | "월목표" | "연목표";
 
 export interface Goal {
   id: string;

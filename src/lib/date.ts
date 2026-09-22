@@ -12,6 +12,19 @@ export function kstToday(): string {
   return new Date(Date.now() + KST_OFFSET_MS).toISOString().slice(0, 10);
 }
 
+// 이번 달의 마지막 날짜를 KST 기준 YYYY-MM-DD로 반환한다.
+export function kstEndOfMonth(): string {
+  const [y, m] = kstToday().split("-").map(Number);
+  const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  return `${y}-${String(m).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+}
+
+// 올해의 마지막 날짜(12/31)를 KST 기준 YYYY-MM-DD로 반환한다.
+export function kstEndOfYear(): string {
+  const [y] = kstToday().split("-");
+  return `${y}-12-31`;
+}
+
 // YYYY-MM-DD 두 날짜 사이의 일수 (date - base)
 export function daysBetween(date: string, base: string): number {
   return Math.round((parseDateUTC(date) - parseDateUTC(base)) / 86_400_000);

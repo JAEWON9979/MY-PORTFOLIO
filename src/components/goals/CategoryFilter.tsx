@@ -5,7 +5,7 @@ import type { GoalCategory } from "@/hooks/useGoals";
 
 export type CategoryFilterValue = "전체" | GoalCategory;
 
-const categories: CategoryFilterValue[] = ["전체", "일목표", "주목표", "연목표"];
+const categories: CategoryFilterValue[] = ["전체", "일목표", "주목표", "월목표", "연목표"];
 
 interface CategoryFilterProps {
   value: CategoryFilterValue;
