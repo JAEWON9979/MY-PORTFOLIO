@@ -114,6 +114,7 @@ export default function ScheduleModal({
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              autoFocus
               required
               maxLength={100}
               spellCheck={false}
