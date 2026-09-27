@@ -62,6 +62,7 @@ export default function RecurringTemplateModal({
               spellCheck={false}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              autoFocus
               required
               maxLength={100}
               className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 focus:border-zinc-900 focus:bg-white focus:outline-none"
