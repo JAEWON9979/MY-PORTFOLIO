@@ -16,6 +16,11 @@ export const certifications: CertificationItem[] = [
     acquiredDate: "2025",
   },
   {
+    name: "컴퓨터활용능력 1급",
+    issuer: "대한상공회의소",
+    acquiredDate: "2026",
+  },
+  {
     name: "한국사능력검정 1급",
     issuer: "국사편찬위원회",
     acquiredDate: "2025",
