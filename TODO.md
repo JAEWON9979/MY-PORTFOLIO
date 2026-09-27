@@ -7,5 +7,6 @@
 - [보안·낮음] `npm audit` 취약점 2건(postcss high, next moderate): Next 15.5.25 내부 postcss 이슈이고 자체 CSS만 빌드하는 구조라 실제 위험은 낮음. `npm audit fix --force`는 Next 16으로 올리는 breaking 변경이라 하지 말고, Next 15.x 패치 릴리스가 나오면 그때 업데이트. 2026-09-20 기준 15.x 최신이 15.5.25(현재 버전)라 새 패치 없음, 15.x에 패치가 나온다는 보장도 없음(공식 수정은 Next 16.3.5뿐). 대안: `package.json`에 `"overrides": {"postcss": "^8.5.28"}`로 Next 내부 postcss만 교체(build·로컬 동작 확인 필요, 위험 낮음) 또는 여유 있을 때 Next 16 업그레이드. 진행 상황은 가끔 `npm audit`·`npm view next dist-tags`로 확인하거나 GitHub Dependabot 알림 사용
 - 일정 페이지(`src/app/schedule/page.tsx`) 레이아웃 변경 — 구체적인 방향은 아직 미정, 착수 전 논의 필요
 - 소개 섹션(`src/components/About.tsx`, 홈의 `#about`) 레이아웃 디자인 변경 — 구체적인 방향은 아직 미정, 착수 전 논의 필요
+- 공휴일 데이터(`src/data/holidays.ts`)는 2027년까지만 있음: 2027년 하반기에 정부가 2028년 공휴일(음력 명절·대체공휴일)을 발표하면 추가. 임시공휴일이 새로 지정되면 그때그때 추가
 - (보류) DMARC 레코드(`_dmarc` TXT, `v=DMARC1; p=none;`) 아직 미설정. Optional이라 발송엔 지장 없지만, 도메인 사칭 방지용으로 나중에 Vercel DNS Records에 수동 추가 고려
 - (보류) 채팅으로 "일정 추가해" 같은 자연어 명령 처리하는 AI 기능 아이디어 논의함: Claude API tool use(비용 발생, 자유로운 문장 이해) vs 규칙 기반 정규식 파싱(무료, 정해진 형식만 인식) 두 방식 검토. 아직 착수 안 함
