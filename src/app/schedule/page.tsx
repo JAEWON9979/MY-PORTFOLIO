@@ -15,6 +15,7 @@ import {
 import { useScheduleMemo } from "@/hooks/useScheduleMemo";
 import { useAuth } from "@/hooks/useAuth";
 import { daysBetween, formatDday } from "@/lib/date";
+import { KOREAN_HOLIDAYS } from "@/data/holidays";
 
 // ── calendar helpers ──────────────────────────────────────────────────────────
 
@@ -269,6 +270,7 @@ export default function SchedulePage() {
                   const isSelected = ds === selectedDate;
                   const daySched = scheduleMap.get(ds) ?? [];
                   const dayOfWeek = date.getDay();
+                  const holiday = KOREAN_HOLIDAYS[ds];
 
                   return (
                     <div
@@ -286,7 +288,7 @@ export default function SchedulePage() {
                         className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
                           isToday
                             ? "bg-zinc-900 text-white"
-                            : dayOfWeek === 0
+                            : dayOfWeek === 0 || holiday
                             ? "text-red-400"
                             : dayOfWeek === 6
                             ? "text-blue-400"
@@ -295,6 +297,11 @@ export default function SchedulePage() {
                       >
                         {date.getDate()}
                       </span>
+                      {holiday && (
+                        <span className="ml-0.5 align-middle text-[10px] text-red-400">
+                          {holiday}
+                        </span>
+                      )}
 
                       {/* Schedule previews */}
                       <div className="mt-0.5 space-y-0.5">
@@ -328,9 +335,16 @@ export default function SchedulePage() {
               {selectedDate ? (
                 <div className="rounded-2xl border border-zinc-200 bg-white p-5">
                   <div className="mb-4 flex items-start justify-between gap-2">
-                    <h2 className="text-sm font-semibold text-zinc-900">
-                      {formatSelectedDate(selectedDate)}
-                    </h2>
+                    <div>
+                      <h2 className="text-sm font-semibold text-zinc-900">
+                        {formatSelectedDate(selectedDate)}
+                      </h2>
+                      {KOREAN_HOLIDAYS[selectedDate] && (
+                        <p className="mt-0.5 text-xs text-red-400">
+                          {KOREAN_HOLIDAYS[selectedDate]}
+                        </p>
+                      )}
+                    </div>
                     <button
                       type="button"
                       onClick={() => setSelectedDate(null)}
