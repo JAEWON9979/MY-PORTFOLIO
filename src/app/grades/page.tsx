@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import RowActions from "@/components/ui/RowActions";
+import SegmentedControl from "@/components/ui/SegmentedControl";
+import StudyProgress from "@/components/grades/StudyProgress";
 import { useAuth } from "@/hooks/useAuth";
 import { useBackdropClose } from "@/hooks/useBackdropClose";
 import {
@@ -182,6 +184,9 @@ function CourseModal({ initialCourse, onClose, onSubmit }: CourseModalProps) {
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
+const TABS = ["성적", "이번 학기"] as const;
+type Tab = (typeof TABS)[number];
+
 export default function GradesPage() {
   const router = useRouter();
   const { user, isAdmin, isLoaded: authLoaded } = useAuth();
@@ -189,6 +194,7 @@ export default function GradesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [selectedKey, setSelectedKey] = useState<string>("");
+  const [tab, setTab] = useState<Tab>("성적");
 
   useEffect(() => {
     if (authLoaded && (!user || !isAdmin)) {
@@ -285,36 +291,48 @@ export default function GradesPage() {
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-zinc-900">학점관리</h1>
-              {isLoaded && (
-                <p className="mt-1 text-sm text-zinc-500">
-                  {courses.length === 0
-                    ? "등록된 과목이 없습니다"
-                    : `총 ${courses.length}개 과목`}
-                </p>
+              {tab === "이번 학기" ? (
+                <p className="mt-1 text-sm text-zinc-500">수강 중인 과목의 주차별 학습 진도</p>
+              ) : (
+                isLoaded && (
+                  <p className="mt-1 text-sm text-zinc-500">
+                    {courses.length === 0
+                      ? "등록된 과목이 없습니다"
+                      : `총 ${courses.length}개 과목`}
+                  </p>
+                )
               )}
             </div>
-            <button
-              type="button"
-              onClick={openAddModal}
-              className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-800"
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                aria-hidden
+            {tab === "성적" && (
+              <button
+                type="button"
+                onClick={openAddModal}
+                className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-800"
               >
-                <path strokeLinecap="round" d="M6 1.5v9M1.5 6h9" />
-              </svg>
-              과목 추가
-            </button>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  aria-hidden
+                >
+                  <path strokeLinecap="round" d="M6 1.5v9M1.5 6h9" />
+                </svg>
+                과목 추가
+              </button>
+            )}
           </div>
 
+          <div className="mb-6">
+            <SegmentedControl options={TABS} value={tab} onChange={setTab} />
+          </div>
+
+          {tab === "이번 학기" && <StudyProgress />}
+
           {/* 전체 통계: 평점(막대) + 학점 3종 */}
-          {isLoaded && (
+          {tab === "성적" && isLoaded && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -363,7 +381,7 @@ export default function GradesPage() {
           )}
 
           {/* 학기 선택 드롭다운 */}
-          {isLoaded && courses.length === 0 ? (
+          {tab !== "성적" ? null : isLoaded && courses.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-zinc-200 px-6 py-14 text-center">
               <p className="text-sm text-zinc-500">
                 등록된 과목이 없습니다. 과목을 추가해보세요.
